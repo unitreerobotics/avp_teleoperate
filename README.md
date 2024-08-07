@@ -76,7 +76,7 @@ mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 lo
 ps. place the generated cert.pem and key.pem files in `teleop`.
 
 ```bash
-cp cert.pem key.pem ~/avp_teleoperate_robot/teleop/
+cp cert.pem key.pem ~/avp_teleoperate/teleop/
 ```
 
 4. open firewall on server:
