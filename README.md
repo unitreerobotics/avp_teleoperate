@@ -127,6 +127,8 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
 
 # Usage
 
+Please read the  [official documentation ]() at least once before starting this program.
+
 ## Dexterous hands service
 
 You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program and copy it to PC of  Unitree H1_2. On Unitree H1_2's PC, execute command:
@@ -162,10 +164,10 @@ python image_client.py
 
 ## Start
 
-> Warning : Before the program starts, all persons must maintain an adequate safety distance from the robot to avoid danger!
+> Warning : All persons must maintain an adequate safety distance from the robot to avoid danger!
 
 ```bash
-python unitree_human_robot.py
+python teleop_hand_and_arm.py
 ```
 
 
