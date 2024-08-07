@@ -5,12 +5,14 @@
 # Introduction
 This repository implements teleoperation of the humanoid robot Unitree H1_2 using Apple Vision Pro.
 
+
+
 # Prerequisites
 
 We tested our code on Ubuntu 20.04 and Ubuntu 22.04, other operating systems may be configured differently.  
 
 For more information, you can refer to [Official documentation ]() and [OpenTeleVision](https://github.com/OpenTeleVision/TeleVision).
- 
+
 
 
 ## inverse kinematics
@@ -32,21 +34,23 @@ cd unitree_dds_wrapper/python
 pip3 install -e .
 ```
 
+
+
 ## TeleVision and Apple Vision Pro configuration
 
 ### basic
 
 ```bash
 cd ~
-git clone https://github.com/unitreerobotics/avp_teleoperate_robot.git 
-cd ~/avp_teleoperate_robot
+git clone https://github.com/unitreerobotics/avp_teleoperate.git 
+cd ~/avp_teleoperate
 pip install -r requirements.txt
 cd act/detr && pip install -e .
 ```
 
 ### Isaac Gym
 
-If you want to try teleoperation example in a simulated environment (teleop_hand.py):
+If you want to try teleoperation example in a simulated environment (`teleop_hand.py`):
 1. Download Isaac Gym: https://developer.nvidia.com/isaac-gym/download
 2. Extracting to the current directory, go to the `IsaacGym_Preview_4_Package/isaacgym/python` directory and execute the command: `pip install -e .`
 
@@ -58,10 +62,10 @@ If you want to try teleoperation example in a simulated environment (teleop_hand
 2. check local ip address:
 
 ```bash
-    ifconfig | grep inet
+ifconfig | grep inet
 ```
 
-Suppose the local ip address of the ubuntu machine is `192.168.123.2`.
+Suppose the local ip address of the ubuntu machine is `192.168.123.2`
 
 3. create certificate:
 
@@ -69,7 +73,7 @@ Suppose the local ip address of the ubuntu machine is `192.168.123.2`.
 mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
 ```
 
-ps. place the generated cert.pem and key.pem files in teleop.
+ps. place the generated cert.pem and key.pem files in `teleop`.
 
 ```bash
 cp cert.pem key.pem ~/avp_teleoperate_robot/teleop/
@@ -87,7 +91,7 @@ sudo ufw allow 8012
 mkcert -CAROOT
 ```
 
-Copy the rootCA.pem via AirDrop to VisionPro and install it.
+Copy the `rootCA.pem` via AirDrop to VisionPro and install it.
 
 Settings > General > About > Certificate Trust Settings. Under "Enable full trust for root certificates", turn on trust for the certificate.
 
@@ -95,7 +99,7 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
 
 6. open the browser on Safari on VisionPro and go to https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
 
-7. Click "Enter VR" and Allow to start the VR session.
+7. Click `Enter VR` and `Allow` to start the VR session.
 
 ### Simulation Teleoperation Example
 1. After setup up streaming with either local or network streaming following the above instructions, you can try teleoperating two robot hands in Issac Gym:
@@ -119,6 +123,8 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
   <img src="https://doc-cdn.unitree.com/static/2024/7/25/4b1b2327d4774abfbe8ef1c084d81cd7_2686x1627.png"  style="display: block; margin: auto; width: 30%;">
 </p> -->
 
+
+
 # Usage
 
 ## Dexterous hands service
@@ -137,7 +143,7 @@ Open another terminal and execute the following command to test. If two hands op
 
 ## Image Server
 
-Copy `image_server.py` in the `avp_teleoperate_robot/teleop/image_server` directory to the PC of Unitree H1_2, and execute the following command **in the PC**:
+Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to the PC of Unitree H1_2, and execute the following command **in the PC**:
 
 ```bash
 sudo python image_server.py
@@ -153,14 +159,15 @@ python image_client.py
 
 ```bash
 python unitree_human_robot.py
-
 ```
+
+
 
 # Codebase Tutorial
 
-The overall structure of the code remains the same as TeleVision, and we will only focus on the directory of files related to Unitree Robot
+The overall structure of the code remains the same as TeleVision, and we only focus on the modified file directories related to Unitree Robot.
 
-    avp_teleoperate_robot/
+    avp_teleoperate/
     │
     ├── act                       [Documents Related to ACT Policy for Imitation Learning]
     │
@@ -182,7 +189,9 @@ The overall structure of the code remains the same as TeleVision, and we will on
     |   |——teleop_hand.py           [Can be used for testing the environment configuration]
 
 
+
 # Acknowledgement
+
 This code builds upon following open-source code-bases. Please visit the URLs to see the respective LICENSES:
 
 1) https://github.com/OpenTeleVision/TeleVision

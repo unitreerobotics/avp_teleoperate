@@ -1,4 +1,4 @@
-Copyright [2024] [Xuxin Cheng, Jialong Li, Shiqi Yang, Ge Yang and Xiaolong Wang]
+Copyright [2024] [HangZhou YuShu TECHNOLOGY CO.,LTD. ("Unitree Robotics")]
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@ limitations under the License.
 
 This code builds upon following open-source code-bases. Please visit the URLs to see the respective LICENSES:
 
-1) https://github.com/tonyzhaozh/act
-2) https://github.com/facebookresearch/detr
-3) https://github.com/dexsuite/dex-retargeting
-4) https://github.com/vuer-ai/vuer
-5) https://github.com/stack-of-tasks/pinocchio
-6) https://github.com/casadi/casadi
-7) https://github.com/meshcat-dev/meshcat-python
-8) https://github.com/zeromq/pyzmq
+1) https://github.com/OpenTeleVision/TeleVision
+2) https://github.com/dexsuite/dex-retargeting
+3) https://github.com/vuer-ai/vuer
+4) https://github.com/stack-of-tasks/pinocchio
+5) https://github.com/casadi/casadi
+6) https://github.com/meshcat-dev/meshcat-python
+7) https://github.com/zeromq/pyzmq
+8) https://github.com/unitreerobotics/unitree_dds_wrapper
+9) https://github.com/tonyzhaozh/act
+10) https://github.com/facebookresearch/detr
 
 ------------------
