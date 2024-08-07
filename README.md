@@ -11,7 +11,7 @@ This repository implements teleoperation of the humanoid robot Unitree H1_2 usin
 
 We tested our code on Ubuntu 20.04 and Ubuntu 22.04, other operating systems may be configured differently.  
 
-For more information, you can refer to [Official documentation ]() and [OpenTeleVision](https://github.com/OpenTeleVision/TeleVision).
+For more information, you can refer to [Official documentation ](https://support.unitree.com/home/zh/Teleoperation) and [OpenTeleVision](https://github.com/OpenTeleVision/TeleVision).
 
 
 
@@ -127,7 +127,7 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
 
 # Usage
 
-Please read the  [official documentation ]() at least once before starting this program.
+Please read the  [official documentation ](https://support.unitree.com/home/zh/Teleoperation) at least once before starting this program.
 
 ## Dexterous hands service
 
