@@ -129,17 +129,22 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
 
 ## Dexterous hands service
 
-On Unitree H1_2's PC, execute command:
+You can refer to Dexterous Hand Development to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program and copy it to PC of  Unitree H1_2. On Unitree H1_2's PC, execute command:
 
 ```bash
+sudo apt install libboost-all-dev libspdlog-dev
+# Build project
+cd h1_inspire_service & mkdir build & cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+# Terminal 1. Run h1 inspire hand service
 sudo ./inspire_hand -s /dev/ttyUSB0
-```
-
-Open another terminal and execute the following command to test. If two hands open and close continuously, it indicates success.
-
-```bash
+# Terminal 2. Run example
 ./h1_hand_example
 ```
+
+If two hands open and close continuously, it indicates success. Once successful, close the `./h1_hand_example` program in Terminal 2.
+
 
 ## Image Server
 
@@ -156,6 +161,8 @@ python image_client.py
 ```
 
 ## Start
+
+> Warning : Before the program starts, all persons must maintain an adequate safety distance from the robot to avoid danger!
 
 ```bash
 python unitree_human_robot.py

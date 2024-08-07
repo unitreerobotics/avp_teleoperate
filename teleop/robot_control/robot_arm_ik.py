@@ -17,7 +17,7 @@ class Arm_IK:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
-        self.robot = pin.RobotWrapper.BuildFromURDF('../assets/H1_5/h1_5.urdf', '../assets/H1_5')
+        self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_2/h1_2.urdf', '../assets/h1_2')
 
         self.mixed_jointsToLockIDs = ["left_hip_yaw_joint",
                                       "left_hip_pitch_joint",
