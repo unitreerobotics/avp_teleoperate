@@ -129,7 +129,7 @@ settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Featu
 
 ## Dexterous hands service
 
-You can refer to Dexterous Hand Development to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program and copy it to PC of  Unitree H1_2. On Unitree H1_2's PC, execute command:
+You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program and copy it to PC of  Unitree H1_2. On Unitree H1_2's PC, execute command:
 
 ```bash
 sudo apt install libboost-all-dev libspdlog-dev
