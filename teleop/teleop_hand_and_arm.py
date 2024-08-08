@@ -15,6 +15,12 @@ import zmq
 import pickle
 import zlib
 
+import os 
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from robot_control.robot_hand import H1HandController
 from teleop.robot_control.robot_arm import H1ArmController
 from teleop.robot_control.robot_arm_ik import Arm_IK

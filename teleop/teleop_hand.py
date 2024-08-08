@@ -7,7 +7,7 @@ import numpy as np
 import torch
 
 from TeleVision import OpenTeleVision
-from Preprocessor import VuerPreprocessor
+from Preprocessor import VuerPreprocessorLegacy as VuerPreprocessor
 from constants_vuer import tip_indices
 from dex_retargeting.retargeting_config import RetargetingConfig
 from pytransform3d import rotations
@@ -257,16 +257,9 @@ if __name__ == '__main__':
 
     try:
         while True:
-            time1 = time.time()
             head_rmat, left_pose, right_pose, left_qpos, right_qpos = teleoperator.step()
-            time2 = time.time()
-            print(f"TV time:{time2-time1}")
             left_img, right_img = simulator.step(head_rmat, left_pose, right_pose, left_qpos, right_qpos)
-            time3 = time.time()
-            print(f"sim time:{time3-time2}")
             np.copyto(teleoperator.img_array, np.hstack((left_img, right_img)))
-            time4 =time.time()
-            print(f"copy image:{time4-time3},total time:{time4-time1}")
 
     except KeyboardInterrupt:
         simulator.end()

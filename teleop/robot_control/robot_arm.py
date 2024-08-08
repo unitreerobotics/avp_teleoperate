@@ -89,6 +89,7 @@ class H1ArmController:
         for id in JointIndex:
             self.msg.motor_cmd[id].q = self.lowstate_subscriber.msg.motor_state[id].q
             self.q_target.append(self.msg.motor_cmd[id].q)
+        # print(f"Init q_pose is :{self.q_target}")
 
         duration = 1000
         init_q = np.array([self.lowstate_subscriber.msg.motor_state[id].q for id in JointIndex])
@@ -176,12 +177,11 @@ class H1ArmController:
                   
     def Control(self):
         while True:
-            ms_tmp_ptr_0 = self.motor_state_buffer.GetData()  
-            if ms_tmp_ptr_0: 
+            ms_tmp_ptr = self.motor_state_buffer.GetData()  
+            if ms_tmp_ptr: 
                 tem_q_desList = copy.deepcopy(self.q_desList)
                 tem_q_tau_ff = copy.deepcopy(self.q_tau_ff)
                 motor_command_tmp = MotorCommand()  
-                ms_tmp_ptr = self.motor_state_buffer.GetData()  
                 self.time += self.control_dt  
                 self.time = min(max(self.time, 0.0), self.init_duration)  
                 self.ratio = self.time / self.init_duration  

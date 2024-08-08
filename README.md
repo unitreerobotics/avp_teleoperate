@@ -23,6 +23,7 @@ conda activate tv
 # If you use `pip install`, Make sure pinocchio version is 3.1.0
 conda install pinocchio -c conda-forge
 pip install meshcat
+pip install casadi
 ```
 
 ## unitree_dds_wrapper
@@ -31,7 +32,7 @@ pip install meshcat
 # Install the Python version of the unitree_dds_wrapper.
 git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
 cd unitree_dds_wrapper/python
-pip3 install -e .
+pip install -e .
 ```
 
 
