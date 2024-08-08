@@ -2,6 +2,7 @@ import numpy as np
 import threading
 import time
 
+# from unitree_dds_wrapper.idl import unitree_hx as unitree_hg # use to test
 from unitree_dds_wrapper.idl import unitree_hg
 from unitree_dds_wrapper.publisher import Publisher
 from unitree_dds_wrapper.subscription import Subscription
@@ -11,8 +12,10 @@ import struct
 from enum import IntEnum
 import copy
 
-kTopicLowCommand = "rt/arm_sdk"
-kTopicLowState = "rt/lowstate_hx"
+kTopicLowCommand = "rt/lowcmd"
+kTopicLowState = "rt/lowstate"
+# kTopicLowCommand = "rt/lowcmd_hx" # use to test
+# kTopicLowState = "rt/lowstate_hx" # use to test
 kNumMotors = 30
 
 
@@ -56,6 +59,10 @@ class H1ArmController:
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
         self.msg =  unitree_hg.msg.dds_.LowCmd_()
+        self.__packCRCformat = '<2B2x2I' \
+         + 'B3x5f3I' * len(self.msg.motor_cmd) \
+         + '41B104B3x3I'
+
         self.msg.head = [0xFE, 0xEF]
         self.lowcmd_publisher = Publisher(unitree_hg.msg.dds_.LowCmd_, kTopicLowCommand)
         self.lowstate_subscriber = Subscription(unitree_hg.msg.dds_.LowState_, kTopicLowState)
@@ -84,12 +91,13 @@ class H1ArmController:
         self.ratio = 0.0
         self.q_target = []
         while not self.lowstate_subscriber.msg:
+            print("lowstate_subscriber is not ok! Please check dds.")
             time.sleep(0.01)
         
         for id in JointIndex:
             self.msg.motor_cmd[id].q = self.lowstate_subscriber.msg.motor_state[id].q
             self.q_target.append(self.msg.motor_cmd[id].q)
-        # print(f"Init q_pose is :{self.q_target}")
+        print(f"Init q_pose is :{self.q_target}")
 
         duration = 1000
         init_q = np.array([self.lowstate_subscriber.msg.motor_state[id].q for id in JointIndex])
@@ -103,9 +111,9 @@ class H1ArmController:
                     self.msg.motor_cmd[id].kp = 200
                     self.msg.motor_cmd[id].kd = 5
                     self.msg.motor_cmd[id].q = q_t[i]
-                self.pre_communication()
-                self.lowcmd_publisher.msg = self.msg
-                self.lowcmd_publisher.write()
+            self.pre_communication()
+            self.lowcmd_publisher.msg = self.msg
+            self.lowcmd_publisher.write()
         print("Lock Leg OK!")
 
         self.report_rpy_thread = threading.Thread(target=self.SubscribeState)
@@ -275,7 +283,7 @@ class JointArmIndex(IntEnum):
     kRightWristPitch = 25
     kRightWristRoll = 26
 
-class JointIndex:
+class JointIndex(IntEnum):
     # Left leg
     kLeftHipYaw = 0
     kLeftHipRoll = 1
