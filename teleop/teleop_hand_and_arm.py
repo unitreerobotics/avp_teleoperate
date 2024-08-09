@@ -135,8 +135,8 @@ if __name__ == '__main__':
                 np.copyto(teleoperator.img_array, np.array(frame))
                 handstate = h1hand.get_hand_state()
 
-                q_poseList=np.zeros(30)
-                q_tau_ff=np.zeros(30)
+                q_poseList=np.zeros(35)
+                q_tau_ff=np.zeros(35)
                 armstate,armv = h1arm.GetMotorState()
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = teleoperator.step()
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                     q_tau_ff[13:27] = tau_ff
                 else:
                     q_poseList[13:27] = armstate
-                    q_tau_ff = np.zeros(30)
+                    q_tau_ff = np.zeros(35)
 
                 h1arm.SetMotorPose(q_poseList, q_tau_ff)
 

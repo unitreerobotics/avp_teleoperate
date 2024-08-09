@@ -2,7 +2,6 @@ import numpy as np
 import threading
 import time
 
-# from unitree_dds_wrapper.idl import unitree_hx as unitree_hg # use to test
 from unitree_dds_wrapper.idl import unitree_hg
 from unitree_dds_wrapper.publisher import Publisher
 from unitree_dds_wrapper.subscription import Subscription
@@ -14,9 +13,7 @@ import copy
 
 kTopicLowCommand = "rt/lowcmd"
 kTopicLowState = "rt/lowstate"
-# kTopicLowCommand = "rt/lowcmd_hx" # use to test
-# kTopicLowState = "rt/lowstate_hx" # use to test
-kNumMotors = 30
+kNumMotors = 35
 
 
 
@@ -59,9 +56,7 @@ class H1ArmController:
         self.q_desList = np.zeros(kNumMotors)
         self.q_tau_ff = np.zeros(kNumMotors)
         self.msg =  unitree_hg.msg.dds_.LowCmd_()
-        self.__packCRCformat = '<2B2x2I' \
-         + 'B3x5f3I' * len(self.msg.motor_cmd) \
-         + '41B104B3x3I'
+        self.__packFmtHGLowCmd = '<2B2x' + 'B3x5fI' * 35 + '5I'
 
         self.msg.head = [0xFE, 0xEF]
         self.lowcmd_publisher = Publisher(unitree_hg.msg.dds_.LowCmd_, kTopicLowCommand)
@@ -98,7 +93,6 @@ class H1ArmController:
             self.msg.motor_cmd[id].q = self.lowstate_subscriber.msg.motor_state[id].q
             self.q_target.append(self.msg.motor_cmd[id].q)
         print(f"Init q_pose is :{self.q_target}")
-
         duration = 1000
         init_q = np.array([self.lowstate_subscriber.msg.motor_state[id].q for id in JointIndex])
         print("Lock Leg...")
@@ -135,42 +129,65 @@ class H1ArmController:
         self.q_desList = q_desList
         self.q_tau_ff = q_tau_ff
 
+    def __Trans(self, packData):
+        calcData = []
+        calcLen = ((len(packData)>>2)-1)
+
+        for i in range(calcLen):
+            d = ((packData[i*4+3] << 24) | (packData[i*4+2] << 16) | (packData[i*4+1] << 8) | (packData[i*4]))
+            calcData.append(d)
+
+        return calcData
+    
+    def __Crc32(self, data):
+        bit = 0
+        crc = 0xFFFFFFFF
+        polynomial = 0x04c11db7
+
+        for i in range(len(data)):
+            bit = 1 << 31
+            current = data[i]
+
+            for b in range(32):
+                if crc & 0x80000000:
+                    crc = (crc << 1) & 0xFFFFFFFF
+                    crc ^= polynomial
+                else:
+                    crc = (crc << 1) & 0xFFFFFFFF
+
+                if current & bit:
+                    crc ^= polynomial
+
+                bit >>= 1
+        
+        return crc
+    
     def pre_communication(self):
         self.__pack_crc()
+
     def __pack_crc(self):
-        rawdata = []
-        rawdata.extend(self.msg.head)
-        rawdata.extend(self.msg.version)
-        for i in range(len(self.msg.motor_cmd)):
-            rawdata.append(self.msg.motor_cmd[i].mode)
-            rawdata.append(self.msg.motor_cmd[i].q)
-            rawdata.append(self.msg.motor_cmd[i].dq)
-            rawdata.append(self.msg.motor_cmd[i].tau)
-            rawdata.append(self.msg.motor_cmd[i].kp)
-            rawdata.append(self.msg.motor_cmd[i].kd)
-            rawdata.extend(self.msg.motor_cmd[i].reserve)
-        rawdata.append(self.msg.bms_cmd.cmd)
-        rawdata.extend(self.msg.bms_cmd.reserve)
-        rawdata.extend(self.msg.led_cmd)
-        rawdata.extend(self.msg.fan_cmd)
-        rawdata.extend(self.msg.cmd)
-        rawdata.extend(self.msg.data)
-        rawdata.extend(self.msg.reserve)
-        rawdata.append(self.msg.crc)
+        origData = []
+        origData.append(self.msg.mode_pr)
+        origData.append(self.msg.mode_machine)
 
-        packdata = struct.pack(self.__packCRCformat, *rawdata)
-        calcdata = []
-        calclen = (len(packdata)>>2)-1
-        for i in range(calclen):
-            d = ((packdata[i*4+3] << 24) | (packdata[i*4+2] << 16) | (packdata[i*4+1] << 8) | (packdata[i*4]))
-            calcdata.append(d)
+        for i in range(35):
+            origData.append(self.msg.motor_cmd[i].mode)
+            origData.append(self.msg.motor_cmd[i].q)
+            origData.append(self.msg.motor_cmd[i].dq)
+            origData.append(self.msg.motor_cmd[i].tau)
+            origData.append(self.msg.motor_cmd[i].kp)
+            origData.append(self.msg.motor_cmd[i].kd)
+            origData.append(self.msg.motor_cmd[i].reserve)
 
-        self.msg.crc = crc32(calcdata)
+        origData.extend(self.msg.reserve)
+        origData.append(self.msg.crc)
+        calcdata = struct.pack(self.__packFmtHGLowCmd, *origData)
+        calcdata =  self.__Trans(calcdata)
+        self.msg.crc = self.__Crc32(calcdata)
 
     def LowCommandWriter(self):
         while True:
             mc_tmp_ptr = self.motor_command_buffer.GetData()
-            # rawdata.extend(self.msg.version)
             if mc_tmp_ptr:
                 for i in JointArmIndex:
                     self.msg.motor_cmd[i].tau = mc_tmp_ptr.tau_ff[i]  
@@ -242,46 +259,48 @@ class H1ArmController:
         weak_motors = [
             JointIndex.kLeftAnkle,
             JointIndex.kRightAnkle,
-            JointIndex.kRightShoulderPitch,
-            JointIndex.kRightShoulderRoll,
-            JointIndex.kRightShoulderYaw,
-            JointIndex.kRightElbow,
+            # Left arm
             JointIndex.kLeftShoulderPitch,
             JointIndex.kLeftShoulderRoll,
             JointIndex.kLeftShoulderYaw,
-            JointIndex.kLeftElbow
+            JointIndex.kLeftElbowPitch,
+            # Right arm
+            JointIndex.kRightShoulderPitch,
+            JointIndex.kRightShoulderRoll,
+            JointIndex.kRightShoulderYaw,
+            JointIndex.kRightElbowPitch,
         ]
         return motor_index in weak_motors
     
     def IsWristMotor(self, motor_index):
-        weak_motors = [
-            JointIndex.kLeftWristYaw,
+        wrist_motors = [
+            JointIndex.kLeftElbowRoll,
             JointIndex.kLeftWristPitch,
-            JointIndex.kLeftWristRoll,
-            JointIndex.kRightWristYaw,
+            JointIndex.kLeftWristyaw,
+            JointIndex.kRightElbowRoll,
             JointIndex.kRightWristPitch,
-            JointIndex.kRightWristRoll
+            JointIndex.kRightWristYaw,
         ]
-        return motor_index in weak_motors
+        return motor_index in wrist_motors
 
 class JointArmIndex(IntEnum):
     # Left arm
     kLeftShoulderPitch = 13
     kLeftShoulderRoll = 14
     kLeftShoulderYaw = 15
-    kLeftElbow = 16
-    kLeftWristYaw = 17
+    kLeftElbowPitch = 16
+    kLeftElbowRoll = 17
     kLeftWristPitch = 18
-    kLeftWristRoll = 19
+    kLeftWristyaw = 19
 
     # Right arm
     kRightShoulderPitch = 20
     kRightShoulderRoll = 21
     kRightShoulderYaw = 22
-    kRightElbow = 23
-    kRightWristYaw = 24
+    kRightElbowPitch = 23
+    kRightElbowRoll = 24
     kRightWristPitch = 25
-    kRightWristRoll = 26
+    kRightWristYaw = 26
 
 class JointIndex(IntEnum):
     # Left leg
@@ -306,21 +325,26 @@ class JointIndex(IntEnum):
     kLeftShoulderPitch = 13
     kLeftShoulderRoll = 14
     kLeftShoulderYaw = 15
-    kLeftElbow = 16
-    kLeftWristYaw = 17
+    kLeftElbowPitch = 16
+    kLeftElbowRoll = 17
     kLeftWristPitch = 18
-    kLeftWristRoll = 19
+    kLeftWristyaw = 19
 
     # Right arm
     kRightShoulderPitch = 20
     kRightShoulderRoll = 21
     kRightShoulderYaw = 22
-    kRightElbow = 23
-    kRightWristYaw = 24
+    kRightElbowPitch = 23
+    kRightElbowRoll = 24
     kRightWristPitch = 25
-    kRightWristRoll = 26
+    kRightWristYaw = 26
 
     kNotUsedJoint = 27
     kNotUsedJoint1 = 28
     kNotUsedJoint2 = 29
+    kNotUsedJoint3 = 30
+    kNotUsedJoint4 = 31
+    kNotUsedJoint5 = 32
+    kNotUsedJoint6 = 33
+    kNotUsedJoint7 = 34
 
