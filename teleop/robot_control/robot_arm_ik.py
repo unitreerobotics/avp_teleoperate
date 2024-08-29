@@ -89,8 +89,14 @@ class Arm_IK:
         self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
         self.vis.initViewer(open=True) 
         self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(True, frame_ids=[43, 44, 85, 86])
+        self.vis.displayFrames(True, frame_ids=[37, 38, 77, 78])
         self.vis.display(pin.neutral(self.reduced_robot.model))
+        
+        #for i in range(self.reduced_robot.model.nframes):
+        #    frame = self.reduced_robot.model.frames[i]
+        #    frame_id = self.reduced_robot.model.getFrameId(frame.name)
+        #    print(f"Frame ID: {frame_id}, Name: {frame.name}")
+            
         # Enable the display of end effector target frames with short axis lengths and greater width.
         frame_viz_names = ['L_ee_target', 'R_ee_target']
         FRAME_AXIS_POSITIONS = (
