@@ -108,10 +108,6 @@ class VuerTeleop:
         left_wrist_mat[0, 3] +=0.20
         right_wrist_mat[0,3] +=0.20
 
-        # for h1(4 Dof arm), we only use xyz (excluding rotation) to tracking. So the rotation matrix should be filled with identity matrix.
-        left_wrist_mat[:3, :3]  = np.eye(3)
-        right_wrist_mat[:3, :3] = np.eye(3)
-
         left_qpos = self.left_retargeting.retarget(left_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
         right_qpos = self.right_retargeting.retarget(right_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
 
