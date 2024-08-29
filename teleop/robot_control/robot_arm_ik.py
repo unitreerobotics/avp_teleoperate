@@ -17,49 +17,42 @@ class Arm_IK:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
-        # self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_description/urdf/h1_with_hand.urdf', '../assets/h1_description/urdf')
-        self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/h1_description/urdf/h1_with_hand.urdf', '../../assets/h1_description/') # for test
+        # self.robot = pin.RobotWrapper.BuildFromURDF('../assets/g1/g1_body29_hand14.urdf', '../assets/g1/')
+        self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/g1/g1_body29_hand14.urdf', '../../assets/g1/') # for test
 
         self.mixed_jointsToLockIDs = [  
-                                        "right_hip_roll_joint",
-                                        "right_hip_pitch_joint",
-                                        "right_knee_joint",
-                                        "left_hip_roll_joint",
-                                        "left_hip_pitch_joint",
-                                        "left_knee_joint",
-                                        "torso_joint",
-                                        "left_hip_yaw_joint",
-                                        "right_hip_yaw_joint",
-
-                                        "left_ankle_joint",
-                                        "right_ankle_joint",
-
-                                        "L_index_proximal_joint",
-                                        "L_index_intermediate_joint",
-                                        "L_middle_proximal_joint",
-                                        "L_middle_intermediate_joint",
-                                        "L_ring_proximal_joint",
-                                        "L_ring_intermediate_joint",
-                                        "L_pinky_proximal_joint",
-                                        "L_pinky_intermediate_joint",
-                                        "L_thumb_proximal_yaw_joint",
-                                        "L_thumb_proximal_pitch_joint",
-                                        "L_thumb_intermediate_joint",
-                                        "L_thumb_distal_joint",
+                                        "left_hip_pitch_joint" ,
+                                        "left_hip_roll_joint" ,
+                                        "left_hip_yaw_joint" ,
+                                        "left_knee_joint" ,
+                                        "left_ankle_pitch_joint" ,
+                                        "left_ankle_roll_joint" ,
+                                        "right_hip_pitch_joint" ,
+                                        "right_hip_roll_joint" ,
+                                        "right_hip_yaw_joint" ,
+                                        "right_knee_joint" ,
+                                        "right_ankle_pitch_joint" ,
+                                        "right_ankle_roll_joint" ,
+                                        "waist_yaw_joint" ,
+                                        "waist_roll_joint" ,
+                                        "waist_pitch_joint" ,
                                         
-                                        "R_index_proximal_joint",
-                                        "R_index_intermediate_joint",
-                                        "R_middle_proximal_joint",
-                                        "R_middle_intermediate_joint",
-                                        "R_ring_proximal_joint",
-                                        "R_ring_intermediate_joint",
-                                        "R_pinky_proximal_joint",
-                                        "R_pinky_intermediate_joint",
-                                        "R_thumb_proximal_yaw_joint",
-                                        "R_thumb_proximal_pitch_joint",
-                                        "R_thumb_intermediate_joint",
-                                        "R_thumb_distal_joint",
-                                      ]
+                                        "left_hand_zero_joint" ,
+                                        "left_hand_one_joint" ,
+                                        "left_hand_two_joint" ,
+                                        "left_hand_three_joint" ,
+                                        "left_hand_four_joint" ,
+                                        "left_hand_five_joint" ,
+                                        "left_hand_six_joint" ,
+                                        
+                                        "right_hand_zero_joint" ,
+                                        "right_hand_one_joint" ,
+                                        "right_hand_two_joint" ,
+                                        "right_hand_three_joint" ,
+                                        "right_hand_four_joint" ,
+                                        "right_hand_five_joint" ,
+                                        "right_hand_six_joint"
+                                    ]
 
         self.reduced_robot = self.robot.buildReducedRobot(
             list_of_joints_to_lock=self.mixed_jointsToLockIDs,
@@ -68,7 +61,7 @@ class Arm_IK:
 
         self.reduced_robot.model.addFrame(
             pin.Frame('L_ee',
-                      self.reduced_robot.model.getJointId('left_hand_joint'),
+                      self.reduced_robot.model.getJointId('left_wrist_yaw_joint'),
                       pin.SE3(np.eye(3),
                               np.array([0.1,0,0]).T),
                       pin.FrameType.OP_FRAME)
@@ -76,7 +69,7 @@ class Arm_IK:
         
         self.reduced_robot.model.addFrame(
             pin.Frame('R_ee',
-                      self.reduced_robot.model.getJointId('right_hand_joint'),
+                      self.reduced_robot.model.getJointId('right_wrist_yaw_joint'),
                       pin.SE3(np.eye(3),
                               np.array([0.1,0,0]).T),
                       pin.FrameType.OP_FRAME)
@@ -89,8 +82,14 @@ class Arm_IK:
         self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
         self.vis.initViewer(open=True) 
         self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(True, frame_ids=[43, 44, 85, 86])
+        self.vis.displayFrames(True, frame_ids=[49, 81])
         self.vis.display(pin.neutral(self.reduced_robot.model))
+
+        # for i in range(self.reduced_robot.model.nframes):
+        #     frame = self.reduced_robot.model.frames[i]
+        #     frame_id = self.reduced_robot.model.getFrameId(frame.name)
+        #     print(f"Frame ID: {frame_id}, Name: {frame.name}")
+
         # Enable the display of end effector target frames with short axis lengths and greater width.
         frame_viz_names = ['L_ee_target', 'R_ee_target']
         FRAME_AXIS_POSITIONS = (
@@ -170,7 +169,7 @@ class Arm_IK:
             'ipopt':{
                 'print_level':0,
                 'max_iter':100,
-                'tol':1e-4
+                'tol':1e-5
             },
             'print_time':False
         }
@@ -226,20 +225,20 @@ if __name__ == "__main__":
     # initial positon
     L_tf_target = pin.SE3(
         pin.Quaternion(1, 0, 0, 0),
-        np.array([0.3, +0.2, 0.2]),
+        np.array([0.23, +0.2, 0.2]),
     )
 
     R_tf_target = pin.SE3(
         pin.Quaternion(1, 0, 0, 0),
-        np.array([0.3, -0.2, 0.2]),
+        np.array([0.23, -0.2, 0.2]),
     )
 
     user_input = input("Please enter the start signal (enter 's' to start the subsequent program):")
     if user_input.lower() == 's':
 
         for i in range(100):
-            L_tf_target.translation += np.array([0.005, 0, 0])
-            R_tf_target.translation -= np.array([0, 0.005, 0])
+            L_tf_target.translation += np.array([0.001, 0, 0.002])
+            R_tf_target.translation += np.array([0.001, 0, 0.002])
 
             arm_ik.ik_fun(L_tf_target.homogeneous, R_tf_target.homogeneous)
-            time.sleep(0.1)
+            time.sleep(0.02)
