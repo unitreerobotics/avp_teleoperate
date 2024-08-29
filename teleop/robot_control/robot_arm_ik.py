@@ -17,45 +17,48 @@ class Arm_IK:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
-        self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_2/h1_2.urdf', '../assets/h1_2')
+        # self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_description/urdf/h1_with_hand.urdf', '../assets/h1_description/urdf')
+        self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/h1_description/urdf/h1_with_hand.urdf', '../../assets/h1_description/') # for test
 
-        self.mixed_jointsToLockIDs = ["left_hip_yaw_joint",
-                                      "left_hip_pitch_joint",
-                                      "left_hip_roll_joint",
-                                      "left_knee_joint",
-                                      "left_ankle_pitch_joint",
-                                      "left_ankle_roll_joint",
-                                      "right_hip_yaw_joint",
-                                      "right_hip_pitch_joint",
-                                      "right_hip_roll_joint",
-                                      "right_knee_joint",
-                                      "right_ankle_pitch_joint",
-                                      "right_ankle_roll_joint",
-                                      "torso_joint",
-                                      "L_index_proximal_joint",
-                                      "L_index_intermediate_joint",
-                                      "L_middle_proximal_joint",
-                                      "L_middle_intermediate_joint",
-                                      "L_pinky_proximal_joint",
-                                      "L_pinky_intermediate_joint",
-                                      "L_ring_proximal_joint",
-                                      "L_ring_intermediate_joint",
-                                      "L_thumb_proximal_yaw_joint",
-                                      "L_thumb_proximal_pitch_joint",
-                                      "L_thumb_intermediate_joint",
-                                      "L_thumb_distal_joint",
-                                      "R_index_proximal_joint",
-                                      "R_index_intermediate_joint",
-                                      "R_middle_proximal_joint",
-                                      "R_middle_intermediate_joint",
-                                      "R_pinky_proximal_joint",
-                                      "R_pinky_intermediate_joint",
-                                      "R_ring_proximal_joint",
-                                      "R_ring_intermediate_joint",
-                                      "R_thumb_proximal_yaw_joint",
-                                      "R_thumb_proximal_pitch_joint",
-                                      "R_thumb_intermediate_joint",
-                                      "R_thumb_distal_joint"
+        self.mixed_jointsToLockIDs = [  
+                                        "right_hip_roll_joint",
+                                        "right_hip_pitch_joint",
+                                        "right_knee_joint",
+                                        "left_hip_roll_joint",
+                                        "left_hip_pitch_joint",
+                                        "left_knee_joint",
+                                        "torso_joint",
+                                        "left_hip_yaw_joint",
+                                        "right_hip_yaw_joint",
+
+                                        "left_ankle_joint",
+                                        "right_ankle_joint",
+
+                                        "L_index_proximal_joint",
+                                        "L_index_intermediate_joint",
+                                        "L_middle_proximal_joint",
+                                        "L_middle_intermediate_joint",
+                                        "L_ring_proximal_joint",
+                                        "L_ring_intermediate_joint",
+                                        "L_pinky_proximal_joint",
+                                        "L_pinky_intermediate_joint",
+                                        "L_thumb_proximal_yaw_joint",
+                                        "L_thumb_proximal_pitch_joint",
+                                        "L_thumb_intermediate_joint",
+                                        "L_thumb_distal_joint",
+                                        
+                                        "R_index_proximal_joint",
+                                        "R_index_intermediate_joint",
+                                        "R_middle_proximal_joint",
+                                        "R_middle_intermediate_joint",
+                                        "R_ring_proximal_joint",
+                                        "R_ring_intermediate_joint",
+                                        "R_pinky_proximal_joint",
+                                        "R_pinky_intermediate_joint",
+                                        "R_thumb_proximal_yaw_joint",
+                                        "R_thumb_proximal_pitch_joint",
+                                        "R_thumb_intermediate_joint",
+                                        "R_thumb_distal_joint",
                                       ]
 
         self.reduced_robot = self.robot.buildReducedRobot(
@@ -65,7 +68,7 @@ class Arm_IK:
 
         self.reduced_robot.model.addFrame(
             pin.Frame('L_ee',
-                      self.reduced_robot.model.getJointId('left_wrist_yaw_joint'),
+                      self.reduced_robot.model.getJointId('left_hand_joint'),
                       pin.SE3(np.eye(3),
                               np.array([0.1,0,0]).T),
                       pin.FrameType.OP_FRAME)
@@ -73,7 +76,7 @@ class Arm_IK:
         
         self.reduced_robot.model.addFrame(
             pin.Frame('R_ee',
-                      self.reduced_robot.model.getJointId('right_wrist_yaw_joint'),
+                      self.reduced_robot.model.getJointId('right_hand_joint'),
                       pin.SE3(np.eye(3),
                               np.array([0.1,0,0]).T),
                       pin.FrameType.OP_FRAME)
@@ -82,52 +85,39 @@ class Arm_IK:
 
         self.init_data = np.zeros(self.reduced_robot.model.nq)
 
-        # # Initialize the Meshcat visualizer
-        # self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
-        # self.vis.initViewer(open=True) 
-        # self.vis.loadViewerModel("pinocchio") 
-        # self.vis.displayFrames(True, frame_ids=[43, 44, 85, 86])
-        # self.vis.display(pin.neutral(self.reduced_robot.model))
-        # # Enable the display of end effector target frames with short axis lengths and greater width.
-        # frame_viz_names = ['L_ee_target', 'R_ee_target']
-        # FRAME_AXIS_POSITIONS = (
-        #     np.array([[0, 0, 0], [1, 0, 0],
-        #             [0, 0, 0], [0, 1, 0],
-        #             [0, 0, 0], [0, 0, 1]]).astype(np.float32).T
-        # )
-        # FRAME_AXIS_COLORS = (
-        #     np.array([[1, 0, 0], [1, 0.6, 0],
-        #             [0, 1, 0], [0.6, 1, 0],
-        #             [0, 0, 1], [0, 0.6, 1]]).astype(np.float32).T
-        # )
-        # axis_length = 0.1
-        # axis_width = 10
-        # for frame_viz_name in frame_viz_names:
-        #     self.vis.viewer[frame_viz_name].set_object(
-        #         mg.LineSegments(
-        #             mg.PointsGeometry(
-        #                 position=axis_length * FRAME_AXIS_POSITIONS,
-        #                 color=FRAME_AXIS_COLORS,
-        #             ),
-        #             mg.LineBasicMaterial(
-        #                 linewidth=axis_width,
-        #                 vertexColors=True,
-        #             ),
-        #         )
-        #     )
-        
-        # self.vis.viewer['Origin'].set_object(
-        #     mg.LineSegments(
-        #         mg.PointsGeometry(
-        #             position=0.3 * FRAME_AXIS_POSITIONS,
-        #             color=FRAME_AXIS_COLORS,
-        #         ),
-        #         mg.LineBasicMaterial(
-        #             linewidth=30,
-        #             vertexColors=True,
-        #         ),
-        #     )
-        # )
+        # Initialize the Meshcat visualizer
+        self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
+        self.vis.initViewer(open=True) 
+        self.vis.loadViewerModel("pinocchio") 
+        self.vis.displayFrames(True, frame_ids=[43, 44, 85, 86])
+        self.vis.display(pin.neutral(self.reduced_robot.model))
+        # Enable the display of end effector target frames with short axis lengths and greater width.
+        frame_viz_names = ['L_ee_target', 'R_ee_target']
+        FRAME_AXIS_POSITIONS = (
+            np.array([[0, 0, 0], [1, 0, 0],
+                      [0, 0, 0], [0, 1, 0],
+                      [0, 0, 0], [0, 0, 1]]).astype(np.float32).T
+        )
+        FRAME_AXIS_COLORS = (
+            np.array([[1, 0, 0], [1, 0.6, 0],
+                      [0, 1, 0], [0.6, 1, 0],
+                      [0, 0, 1], [0, 0.6, 1]]).astype(np.float32).T
+        )
+        axis_length = 0.1
+        axis_width = 10
+        for frame_viz_name in frame_viz_names:
+            self.vis.viewer[frame_viz_name].set_object(
+                mg.LineSegments(
+                    mg.PointsGeometry(
+                        position=axis_length * FRAME_AXIS_POSITIONS,
+                        color=FRAME_AXIS_COLORS,
+                    ),
+                    mg.LineBasicMaterial(
+                        linewidth=axis_width,
+                        vertexColors=True,
+                    ),
+                )
+            )
 
         # Creating Casadi models and data for symbolic computing
         self.cmodel = cpin.Model(self.reduced_robot.model)
@@ -179,8 +169,8 @@ class Arm_IK:
         opts = {
             'ipopt':{
                 'print_level':0,
-                'max_iter':30,
-                'tol':5e-3
+                'max_iter':100,
+                'tol':1e-4
             },
             'print_time':False
         }
@@ -199,12 +189,10 @@ class Arm_IK:
             self.init_data = motorstate
         self.opti.set_initial(self.var_q, self.init_data)
 
-        # self.vis.viewer['L_ee_target'].set_transform(left_pose)
-        # self.vis.viewer['R_ee_target'].set_transform(right_pose)
-        # origin_pose = np.eye(4)
-        # self.vis.viewer['Origin'].set_transform(origin_pose)
+        self.vis.viewer['L_ee_target'].set_transform(left_pose)   # for visualization
+        self.vis.viewer['R_ee_target'].set_transform(right_pose)  # for visualization
 
-        left_pose, right_pose = self.adjust_pose(left_pose, right_pose)
+        # left_pose, right_pose = self.adjust_pose(left_pose, right_pose)
 
         self.opti.set_value(self.param_tf_l, left_pose)
         self.opti.set_value(self.param_tf_r, right_pose)
@@ -214,7 +202,7 @@ class Arm_IK:
             sol = self.opti.solve_limited()
             sol_q = self.opti.value(self.var_q)
 
-            # self.vis.display(sol_q)
+            self.vis.display(sol_q)  # for visualization
             self.init_data = sol_q
 
             if motorV is not None:
@@ -230,3 +218,28 @@ class Arm_IK:
             print(f"ERROR in convergence, plotting debug info.{e}")
             # sol_q = self.opti.debug.value(self.var_q)   # return original value
             return sol_q, '',False
+
+
+if __name__ == "__main__":
+    arm_ik = Arm_IK()
+
+    # initial positon
+    L_tf_target = pin.SE3(
+        pin.Quaternion(1, 0, 0, 0),
+        np.array([0.3, +0.2, 0.2]),
+    )
+
+    R_tf_target = pin.SE3(
+        pin.Quaternion(1, 0, 0, 0),
+        np.array([0.3, -0.2, 0.2]),
+    )
+
+    user_input = input("Please enter the start signal (enter 's' to start the subsequent program):")
+    if user_input.lower() == 's':
+
+        for i in range(100):
+            L_tf_target.translation += np.array([0.005, 0, 0])
+            R_tf_target.translation -= np.array([0, 0.005, 0])
+
+            arm_ik.ik_fun(L_tf_target.homogeneous, R_tf_target.homogeneous)
+            time.sleep(0.1)
