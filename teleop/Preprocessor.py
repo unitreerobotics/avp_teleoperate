@@ -8,17 +8,18 @@ from motion_utils import mat_update, fast_mat_inv
 class VuerPreprocessor:
     def __init__(self):
         self.vuer_head_mat = np.array([[1, 0, 0, 0],
-                                  [0, 1, 0, 1.5],
-                                  [0, 0, 1, -0.2],
-                                  [0, 0, 0, 1]])
+                                       [0, 1, 0, 1.5],
+                                       [0, 0, 1, -0.2],
+                                       [0, 0, 0, 1]])
         self.vuer_right_wrist_mat = np.array([[1, 0, 0, 0.5],
-                                         [0, 1, 0, 1],
-                                         [0, 0, 1, -0.5],
-                                         [0, 0, 0, 1]])
+                                              [0, 1, 0, 1],
+                                              [0, 0, 1, -0.5],
+                                              [0, 0, 0, 1]])
+        
         self.vuer_left_wrist_mat = np.array([[1, 0, 0, -0.5],
-                                        [0, 1, 0, 1],
-                                        [0, 0, 1, -0.5],
-                                        [0, 0, 0, 1]])
+                                             [0, 1, 0, 1],
+                                             [0, 0, 1, -0.5],
+                                             [0, 0, 0, 1]])
 
     def process(self, tv):
         self.vuer_head_mat = mat_update(self.vuer_head_mat, tv.head_matrix.copy())
