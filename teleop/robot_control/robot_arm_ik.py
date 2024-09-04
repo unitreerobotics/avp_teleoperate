@@ -175,8 +175,8 @@ class Arm_IK:
         opts = {
             'ipopt':{
                 'print_level':0,
-                'max_iter':100,
-                'tol':1e-4
+                'max_iter':30,
+                'tol':5e-3
             },
             'print_time':False
         }
