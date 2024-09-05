@@ -63,7 +63,7 @@ class Arm_IK:
             pin.Frame('L_ee',
                       self.reduced_robot.model.getJointId('left_wrist_yaw_joint'),
                       pin.SE3(np.eye(3),
-                              np.array([0.1,0,0]).T),
+                              np.array([0.05,0,0]).T),
                       pin.FrameType.OP_FRAME)
         )
         
@@ -71,7 +71,7 @@ class Arm_IK:
             pin.Frame('R_ee',
                       self.reduced_robot.model.getJointId('right_wrist_yaw_joint'),
                       pin.SE3(np.eye(3),
-                              np.array([0.1,0,0]).T),
+                              np.array([0.05,0,0]).T),
                       pin.FrameType.OP_FRAME)
         )
         
@@ -82,7 +82,7 @@ class Arm_IK:
         self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
         self.vis.initViewer(open=True) 
         self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(True, frame_ids=[49, 81])
+        self.vis.displayFrames(True, frame_ids=[49, 81, 101, 102], axis_length = 0.15, axis_width = 5)
         self.vis.display(pin.neutral(self.reduced_robot.model))
 
         # for i in range(self.reduced_robot.model.nframes):
@@ -162,7 +162,7 @@ class Arm_IK:
             self.var_q,
             self.reduced_robot.model.upperPositionLimit)
         )
-        self.opti.minimize(20 * self.totalcost + self.regularization)
+        self.opti.minimize(20 * self.totalcost + 0.01 * self.regularization)
         # self.opti.minimize(20 * self.totalcost + 0.001*self.regularization + 0.1*self.smooth_cost)
 
         opts = {
@@ -171,7 +171,7 @@ class Arm_IK:
                 'max_iter':100,
                 'tol':1e-5
             },
-            'print_time':False
+            'print_time':True
         }
         self.opti.solver("ipopt", opts)
 
@@ -209,7 +209,7 @@ class Arm_IK:
             else:
                 v = (sol_q-self.init_data ) * 0.0
 
-            tau_ff = pin.rnea(self.reduced_robot.model, self.reduced_robot.data, sol_q,v,np.zeros(self.reduced_robot.model.nv))
+            tau_ff = pin.rnea(self.reduced_robot.model, self.reduced_robot.data, sol_q, v, np.zeros(self.reduced_robot.model.nv))
 
             return sol_q, tau_ff ,True
         
@@ -237,8 +237,8 @@ if __name__ == "__main__":
     if user_input.lower() == 's':
 
         for i in range(100):
-            L_tf_target.translation += np.array([0.001, 0, 0.002])
-            R_tf_target.translation += np.array([0.001, 0, 0.002])
+            L_tf_target.translation += np.array([0.002, 0.002, 0.002])
+            R_tf_target.translation += np.array([0.002, -0.002, 0.002])
 
             arm_ik.ik_fun(L_tf_target.homogeneous, R_tf_target.homogeneous)
             time.sleep(0.02)
