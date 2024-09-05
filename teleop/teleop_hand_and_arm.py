@@ -22,7 +22,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from robot_control.robot_hand import H1HandController
-from teleop.robot_control.robot_arm import H1ArmController
+from teleop.robot_control.robot_arm import H1ArmController, kNumMotors
 from teleop.robot_control.robot_arm_ik import Arm_IK
 
 
@@ -135,19 +135,19 @@ if __name__ == '__main__':
                 np.copyto(teleoperator.img_array, np.array(frame))
                 handstate = h1hand.get_hand_state()
 
-                q_poseList=np.zeros(35)
-                q_tau_ff=np.zeros(35)
+                q_poseList=np.zeros(kNumMotors) # h1 with 20 motors
+                q_tau_ff=np.zeros(kNumMotors)
                 armstate,armv = h1arm.GetMotorState()
 
                 head_rmat, left_pose, right_pose, left_qpos, right_qpos = teleoperator.step()
-                sol_q ,tau_ff, flag = arm_ik.ik_fun(left_pose, right_pose, armstate,armv)
+                sol_q ,tau_ff, flag = arm_ik.ik_fun(left_pose, right_pose, armstate, armv)
                 
                 if flag:
-                    q_poseList[13:27] = sol_q
-                    q_tau_ff[13:27] = tau_ff
+                    q_poseList[12:20] = sol_q
+                    q_tau_ff[12:20] = tau_ff
                 else:
                     q_poseList[13:27] = armstate
-                    q_tau_ff = np.zeros(35)
+                    q_tau_ff = np.zeros(20)
 
                 h1arm.SetMotorPose(q_poseList, q_tau_ff)
 

@@ -13,7 +13,7 @@ import copy
 
 kTopicLowCommand = "rt/lowcmd"
 kTopicLowState = "rt/lowstate"
-kNumMotors = 35
+kNumMotors = 20
 
 
 
@@ -72,8 +72,8 @@ class H1ArmController:
         self.kp_high = 200.0
         self.kd_high = 5.0
 
-        self.kp_wrist = 35.0
-        self.kd_wrist = 6.0
+        # self.kp_wrist = 35.0
+        # self.kd_wrist = 6.0
 
         self.control_dt = 0.01
         self.hip_pitch_init_pos = -0.5
@@ -170,7 +170,7 @@ class H1ArmController:
         origData.append(self.msg.mode_pr)
         origData.append(self.msg.mode_machine)
 
-        for i in range(35):
+        for i in range(kNumMotors):
             origData.append(self.msg.motor_cmd[i].mode)
             origData.append(self.msg.motor_cmd[i].q)
             origData.append(self.msg.motor_cmd[i].dq)
@@ -214,9 +214,9 @@ class H1ArmController:
                     if self.IsWeakMotor(i):
                         motor_command_tmp.kp[i] = self.kp_low
                         motor_command_tmp.kd[i] = self.kd_low
-                    elif self.IsWristMotor(i):
-                        motor_command_tmp.kp[i] = self.kp_wrist
-                        motor_command_tmp.kd[i] = self.kd_wrist
+                    # elif self.IsWristMotor(i):
+                    #     motor_command_tmp.kp[i] = self.kp_wrist
+                    #     motor_command_tmp.kd[i] = self.kd_wrist
                     else:
                         motor_command_tmp.kp[i] = self.kp_high
                         motor_command_tmp.kd[i] = self.kd_high
@@ -263,88 +263,66 @@ class H1ArmController:
             JointIndex.kLeftShoulderPitch,
             JointIndex.kLeftShoulderRoll,
             JointIndex.kLeftShoulderYaw,
-            JointIndex.kLeftElbowPitch,
+            JointIndex.kLeftElbow,
             # Right arm
             JointIndex.kRightShoulderPitch,
             JointIndex.kRightShoulderRoll,
             JointIndex.kRightShoulderYaw,
-            JointIndex.kRightElbowPitch,
+            JointIndex.kRightElbow,
         ]
         return motor_index in weak_motors
     
-    def IsWristMotor(self, motor_index):
-        wrist_motors = [
-            JointIndex.kLeftElbowRoll,
-            JointIndex.kLeftWristPitch,
-            JointIndex.kLeftWristyaw,
-            JointIndex.kRightElbowRoll,
-            JointIndex.kRightWristPitch,
-            JointIndex.kRightWristYaw,
-        ]
-        return motor_index in wrist_motors
+    # def IsWristMotor(self, motor_index):
+    #     wrist_motors = [
+    #         JointIndex.kLeftElbowRoll,
+    #         JointIndex.kLeftWristPitch,
+    #         JointIndex.kLeftWristyaw,
+    #         JointIndex.kRightElbowRoll,
+    #         JointIndex.kRightWristPitch,
+    #         JointIndex.kRightWristYaw,
+    #     ]
+    #     return motor_index in wrist_motors
 
 class JointArmIndex(IntEnum):
-    # Left arm
-    kLeftShoulderPitch = 13
-    kLeftShoulderRoll = 14
-    kLeftShoulderYaw = 15
-    kLeftElbowPitch = 16
-    kLeftElbowRoll = 17
-    kLeftWristPitch = 18
-    kLeftWristyaw = 19
-
+    # for H1
     # Right arm
-    kRightShoulderPitch = 20
-    kRightShoulderRoll = 21
-    kRightShoulderYaw = 22
-    kRightElbowPitch = 23
-    kRightElbowRoll = 24
-    kRightWristPitch = 25
-    kRightWristYaw = 26
+    kRightShoulderPitch = 12
+    kRightShoulderRoll = 13
+    kRightShoulderYaw = 14
+    kRightElbow = 15
+    # Left arm
+    kLeftShoulderPitch = 16
+    kLeftShoulderRoll = 17
+    kLeftShoulderYaw = 18
+    kLeftElbow = 19
 
 class JointIndex(IntEnum):
-    # Left leg
-    kLeftHipYaw = 0
-    kLeftHipRoll = 1
-    kLeftHipPitch = 2
-    kLeftKnee = 3
-    kLeftAnkle = 4
-    kLeftAnkleRoll = 5
-
+    # for H1
     # Right leg
-    kRightHipYaw = 6
-    kRightHipRoll = 7
-    kRightHipPitch = 8
-    kRightKnee = 9
-    kRightAnkle = 10
-    kRightAnkleRoll = 11
+    kRightHipYaw = 8
+    kRightHipRoll = 0
+    kRightHipPitch = 1
+    kRightKnee = 2
+    kRightAnkle = 11
+    # Left leg
+    kLeftHipYaw = 7
+    kLeftHipRoll = 3
+    kLeftHipPitch = 4
+    kLeftKnee = 5
+    kLeftAnkle = 10
 
-    kWaistYaw = 12
+    kWaistYaw = 6
 
-    # Left arm
-    kLeftShoulderPitch = 13
-    kLeftShoulderRoll = 14
-    kLeftShoulderYaw = 15
-    kLeftElbowPitch = 16
-    kLeftElbowRoll = 17
-    kLeftWristPitch = 18
-    kLeftWristyaw = 19
+    kNotUsedJoint = 9
 
     # Right arm
-    kRightShoulderPitch = 20
-    kRightShoulderRoll = 21
-    kRightShoulderYaw = 22
-    kRightElbowPitch = 23
-    kRightElbowRoll = 24
-    kRightWristPitch = 25
-    kRightWristYaw = 26
-
-    kNotUsedJoint = 27
-    kNotUsedJoint1 = 28
-    kNotUsedJoint2 = 29
-    kNotUsedJoint3 = 30
-    kNotUsedJoint4 = 31
-    kNotUsedJoint5 = 32
-    kNotUsedJoint6 = 33
-    kNotUsedJoint7 = 34
+    kRightShoulderPitch = 12
+    kRightShoulderRoll = 13
+    kRightShoulderYaw = 14
+    kRightElbow = 15
+    # Left arm
+    kLeftShoulderPitch = 16
+    kLeftShoulderRoll = 17
+    kLeftShoulderYaw = 18
+    kLeftElbow = 19
 

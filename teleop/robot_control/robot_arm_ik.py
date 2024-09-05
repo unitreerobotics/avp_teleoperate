@@ -59,26 +59,33 @@ class Arm_IK:
                                         "R_thumb_proximal_pitch_joint",
                                         "R_thumb_intermediate_joint",
                                         "R_thumb_distal_joint",
-                                      ]
 
+                                        "left_hand_joint",
+                                        "right_hand_joint"    
+                                      ]
+   
         self.reduced_robot = self.robot.buildReducedRobot(
             list_of_joints_to_lock=self.mixed_jointsToLockIDs,
             reference_configuration=np.array([0.0] * self.robot.model.nq),
         )
 
+        # for i, joint in enumerate(self.reduced_robot.model.joints):
+        #     joint_name = self.reduced_robot.model.names[i]
+        #     print(f"Joint {i}: {joint_name}, ID: {joint.id}")
+
         self.reduced_robot.model.addFrame(
             pin.Frame('L_ee',
-                      self.reduced_robot.model.getJointId('left_hand_joint'),
+                      self.reduced_robot.model.getJointId('left_elbow_joint'),
                       pin.SE3(np.eye(3),
-                              np.array([0.05,0,0]).T),
+                              np.array([0.2605 + 0.05,0,0]).T),
                       pin.FrameType.OP_FRAME)
         )
         
         self.reduced_robot.model.addFrame(
             pin.Frame('R_ee',
-                      self.reduced_robot.model.getJointId('right_hand_joint'),
+                      self.reduced_robot.model.getJointId('right_elbow_joint'),
                       pin.SE3(np.eye(3),
-                              np.array([0.05,0,0]).T),
+                              np.array([0.2605 + 0.05,0,0]).T),
                       pin.FrameType.OP_FRAME)
         )
         
@@ -89,7 +96,7 @@ class Arm_IK:
         self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
         self.vis.initViewer(open=True) 
         self.vis.loadViewerModel("pinocchio") 
-        self.vis.displayFrames(True, frame_ids=[37, 38, 77, 78], axis_length = 0.15, axis_width = 5)
+        self.vis.displayFrames(True, frame_ids=[35, 75, 105, 106], axis_length = 0.15, axis_width = 5)
         self.vis.display(pin.neutral(self.reduced_robot.model))
         
         #for i in range(self.reduced_robot.model.nframes):
@@ -145,10 +152,10 @@ class Arm_IK:
                 casadi.vertcat(
                     cpin.log6(
                         self.cdata.oMf[self.L_hand_id].inverse() * cpin.SE3(self.cTf_l)
-                    ).vector,
+                    ).vector[:3],
                     cpin.log6(
                         self.cdata.oMf[self.R_hand_id].inverse() * cpin.SE3(self.cTf_r)
-                    ).vector
+                    ).vector[:3]
                 )
             ],
         )
@@ -169,7 +176,7 @@ class Arm_IK:
             self.var_q,
             self.reduced_robot.model.upperPositionLimit)
         )
-        self.opti.minimize(20 * self.totalcost + 0.001 * self.regularization)
+        self.opti.minimize(10 * self.totalcost + 0.001 * self.regularization)
         # self.opti.minimize(20 * self.totalcost + 0.001*self.regularization + 0.1*self.smooth_cost)
 
         opts = {
@@ -182,7 +189,7 @@ class Arm_IK:
         }
         self.opti.solver("ipopt", opts)
 
-    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.60, robot_arm_length=1.20):
+    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.55, robot_arm_length=0.75):
         scale_factor = robot_arm_length / human_arm_length
         robot_left_pose = human_left_pose.copy()
         robot_right_pose = human_right_pose.copy()
