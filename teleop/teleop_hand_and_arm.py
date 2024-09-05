@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
                 h1arm.SetMotorPose(q_poseList, q_tau_ff)
 
-                if right_pose is not None and left_qpos is not None:
+                if right_qpos is not None and left_qpos is not None:
                     # 4,5: index 6,7: middle, 0,1: pinky, 2,3: ring, 8,9: thumb
                     right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
                     right_angles.append(1.2 - right_qpos[8])
