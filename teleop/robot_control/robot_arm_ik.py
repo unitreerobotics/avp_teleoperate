@@ -18,6 +18,7 @@ class Arm_IK:
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
         self.robot = pin.RobotWrapper.BuildFromURDF('../assets/h1_2/h1_2.urdf', '../assets/h1_2')
+        # self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/h1_2/h1_2.urdf', '../../assets/h1_2/') # for test
 
         self.mixed_jointsToLockIDs = ["left_hip_yaw_joint",
                                       "left_hip_pitch_joint",
@@ -63,6 +64,11 @@ class Arm_IK:
             reference_configuration=np.array([0.0] * self.robot.model.nq),
         )
 
+        # for i, joint in enumerate(self.reduced_robot.model.joints):
+        #     joint_name = self.reduced_robot.model.names[i]
+        #     print(f"Joint {i}: {joint_name}, ID: {joint.id}")
+
+
         self.reduced_robot.model.addFrame(
             pin.Frame('L_ee',
                       self.reduced_robot.model.getJointId('left_wrist_yaw_joint'),
@@ -82,23 +88,29 @@ class Arm_IK:
 
         self.init_data = np.zeros(self.reduced_robot.model.nq)
 
-        # # Initialize the Meshcat visualizer
+        # # Initialize the Meshcat visualizer  for visualization
         # self.vis = MeshcatVisualizer(self.reduced_robot.model, self.reduced_robot.collision_model, self.reduced_robot.visual_model)
         # self.vis.initViewer(open=True) 
         # self.vis.loadViewerModel("pinocchio") 
-        # self.vis.displayFrames(True, frame_ids=[43, 44, 85, 86])
+        # self.vis.displayFrames(True, frame_ids=[113, 114], axis_length = 0.15, axis_width = 5)
         # self.vis.display(pin.neutral(self.reduced_robot.model))
+
+        # # for i in range(self.reduced_robot.model.nframes):
+        # #    frame = self.reduced_robot.model.frames[i]
+        # #    frame_id = self.reduced_robot.model.getFrameId(frame.name)
+        # #    print(f"Frame ID: {frame_id}, Name: {frame.name}")
+
         # # Enable the display of end effector target frames with short axis lengths and greater width.
         # frame_viz_names = ['L_ee_target', 'R_ee_target']
         # FRAME_AXIS_POSITIONS = (
         #     np.array([[0, 0, 0], [1, 0, 0],
-        #             [0, 0, 0], [0, 1, 0],
-        #             [0, 0, 0], [0, 0, 1]]).astype(np.float32).T
+        #               [0, 0, 0], [0, 1, 0],
+        #               [0, 0, 0], [0, 0, 1]]).astype(np.float32).T
         # )
         # FRAME_AXIS_COLORS = (
         #     np.array([[1, 0, 0], [1, 0.6, 0],
-        #             [0, 1, 0], [0.6, 1, 0],
-        #             [0, 0, 1], [0, 0.6, 1]]).astype(np.float32).T
+        #               [0, 1, 0], [0.6, 1, 0],
+        #               [0, 0, 1], [0, 0.6, 1]]).astype(np.float32).T
         # )
         # axis_length = 0.1
         # axis_width = 10
@@ -115,19 +127,6 @@ class Arm_IK:
         #             ),
         #         )
         #     )
-        
-        # self.vis.viewer['Origin'].set_object(
-        #     mg.LineSegments(
-        #         mg.PointsGeometry(
-        #             position=0.3 * FRAME_AXIS_POSITIONS,
-        #             color=FRAME_AXIS_COLORS,
-        #         ),
-        #         mg.LineBasicMaterial(
-        #             linewidth=30,
-        #             vertexColors=True,
-        #         ),
-        #     )
-        # )
 
         # Creating Casadi models and data for symbolic computing
         self.cmodel = cpin.Model(self.reduced_robot.model)
@@ -160,12 +159,12 @@ class Arm_IK:
         # Defining the optimization problem
         self.opti = casadi.Opti()
         self.var_q = self.opti.variable(self.reduced_robot.model.nq)
-        # self.param_q_ik_last = self.opti.parameter(self.reduced_robot.model.nq)
+        # self.var_q_last = self.opti.parameter(self.reduced_robot.model.nq)   # for smooth
         self.param_tf_l = self.opti.parameter(4, 4)
         self.param_tf_r = self.opti.parameter(4, 4)
         self.totalcost = casadi.sumsqr(self.error(self.var_q, self.param_tf_l, self.param_tf_r))
         self.regularization = casadi.sumsqr(self.var_q)
-        # self.smooth_cost = casadi.sumsqr(self.var_q - self.param_q_ik_last)
+        # self.smooth_cost = casadi.sumsqr(self.var_q - self.var_q_last) # for smooth
 
         # Setting optimization constraints and goals
         self.opti.subject_to(self.opti.bounded(
@@ -173,20 +172,20 @@ class Arm_IK:
             self.var_q,
             self.reduced_robot.model.upperPositionLimit)
         )
-        self.opti.minimize(20 * self.totalcost + self.regularization)
-        # self.opti.minimize(20 * self.totalcost + 0.001*self.regularization + 0.1*self.smooth_cost)
+        self.opti.minimize(20 * self.totalcost + 0.01 * self.regularization)
+        # self.opti.minimize(20 * self.totalcost + 0.01 * self.regularization + 0.1 * self.smooth_cost) # for smooth
 
         opts = {
             'ipopt':{
-                'print_level':0,
-                'max_iter':30,
-                'tol':5e-3
+                'print_level':3,
+                'max_iter':50,
+                'tol':1e-4
             },
-            'print_time':False
+            'print_time':True
         }
         self.opti.solver("ipopt", opts)
 
-    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.60, robot_arm_length=1.20):
+    def adjust_pose(self, human_left_pose, human_right_pose, human_arm_length=0.60, robot_arm_length=0.75):
         scale_factor = robot_arm_length / human_arm_length
         robot_left_pose = human_left_pose.copy()
         robot_right_pose = human_right_pose.copy()
@@ -199,22 +198,21 @@ class Arm_IK:
             self.init_data = motorstate
         self.opti.set_initial(self.var_q, self.init_data)
 
-        # self.vis.viewer['L_ee_target'].set_transform(left_pose)
-        # self.vis.viewer['R_ee_target'].set_transform(right_pose)
-        # origin_pose = np.eye(4)
-        # self.vis.viewer['Origin'].set_transform(origin_pose)
-
         left_pose, right_pose = self.adjust_pose(left_pose, right_pose)
+
+        # self.vis.viewer['L_ee_target'].set_transform(left_pose)     # for visualization
+        # self.vis.viewer['R_ee_target'].set_transform(right_pose)    # for visualization
 
         self.opti.set_value(self.param_tf_l, left_pose)
         self.opti.set_value(self.param_tf_r, right_pose)
+        # self.opti.set_value(self.var_q_last, self.init_data) # for smooth
 
         try:
             # sol = self.opti.solve()
             sol = self.opti.solve_limited()
             sol_q = self.opti.value(self.var_q)
 
-            # self.vis.display(sol_q)
+            # self.vis.display(sol_q) # for visualization
             self.init_data = sol_q
 
             if motorV is not None:
@@ -230,3 +228,35 @@ class Arm_IK:
             print(f"ERROR in convergence, plotting debug info.{e}")
             # sol_q = self.opti.debug.value(self.var_q)   # return original value
             return sol_q, '',False
+        
+if __name__ == "__main__":
+    arm_ik = Arm_IK()
+
+    # initial positon
+    L_tf_target = pin.SE3(
+        pin.Quaternion(1, 0, 0, 0),
+        np.array([0.3, +0.2, 0.2]),
+    )
+
+    R_tf_target = pin.SE3(
+        pin.Quaternion(1, 0, 0, 0),
+        np.array([0.3, -0.2, 0.2]),
+    )
+
+    rotation_speed = 0.005  # Rotation speed in radians per iteration
+
+    user_input = input("Please enter the start signal (enter 's' to start the subsequent program):")
+    if user_input.lower() == 's':
+
+        for i in range(150):
+            angle = rotation_speed * i
+            L_quat = pin.Quaternion(np.cos(angle / 2), 0, np.sin(angle / 2), 0)  # y axis
+            R_quat = pin.Quaternion(np.cos(angle / 2), 0, 0, np.sin(angle / 2))  # z axis
+
+            L_tf_target.translation += np.array([0.001,  0.001, 0.001])
+            R_tf_target.translation += np.array([0.001, -0.001, 0.001])
+            L_tf_target.rotation = L_quat.toRotationMatrix()
+            R_tf_target.rotation = R_quat.toRotationMatrix()
+
+            arm_ik.ik_fun(L_tf_target.homogeneous, R_tf_target.homogeneous)
+            time.sleep(0.02)
