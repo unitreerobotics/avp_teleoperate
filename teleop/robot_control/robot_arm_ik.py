@@ -13,12 +13,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+from robot_control.joint_smooth import WeightedMovingFilter
+
 class Arm_IK:
     def __init__(self):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
-        # self.robot = pin.RobotWrapper.BuildFromURDF('../assets/g1/g1_body29_hand14.urdf', '../assets/g1/')
-        self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/g1/g1_body29_hand14.urdf', '../../assets/g1/') # for test
+        self.robot = pin.RobotWrapper.BuildFromURDF('../assets/g1/g1_body29_hand14.urdf', '../assets/g1/')
+        # self.robot = pin.RobotWrapper.BuildFromURDF('../../assets/g1/g1_body29_hand14.urdf', '../../assets/g1/') # for test
 
         self.mixed_jointsToLockIDs = [  
                                         "left_hip_pitch_joint" ,
@@ -74,7 +76,8 @@ class Arm_IK:
                               np.array([0.05,0,0]).T),
                       pin.FrameType.OP_FRAME)
         )
-        
+
+        self.joint_smooth_filter = WeightedMovingFilter(np.array([0.4, 0.3, 0.2, 0.1]), 14)
 
         self.init_data = np.zeros(self.reduced_robot.model.nq)
 
@@ -201,6 +204,9 @@ class Arm_IK:
             # sol = self.opti.solve()
             sol = self.opti.solve_limited()
             sol_q = self.opti.value(self.var_q)
+
+            self.joint_smooth_filter.add_data(sol_q)
+            sol_q = self.joint_smooth_filter.filtered_data
 
             # self.vis.display(sol_q)  # for visualization
             self.init_data = sol_q
