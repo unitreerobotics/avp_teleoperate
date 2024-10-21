@@ -1,19 +1,9 @@
 import numpy as np
-
-from TeleVision import OpenTeleVision
-from Preprocessor import VuerPreprocessor
-from constants_vuer import tip_indices
-from dex_retargeting.retargeting_config import RetargetingConfig
-
-from pathlib import Path
 import time
-import yaml
-from multiprocessing import Process, shared_memory, Queue, Manager, Event, Lock
-
+import argparse
 import cv2
-import zmq
-import pickle
-import zlib
+from multiprocessing import Process, shared_memory, Array
+import threading
 
 import os 
 import sys
@@ -21,146 +11,170 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from robot_control.robot_hand import H1HandController
-from teleop.robot_control.robot_arm import H1ArmController
-from teleop.robot_control.robot_arm_ik import Arm_IK
-
-
-def image_receiver(image_queue, resolution, crop_size_w, crop_size_h):
-    context = zmq.Context()
-    socket = context.socket(zmq.PULL)
-    socket.connect("tcp://192.168.123.162:5555")
-    
-    while True:
-        compressed_data = b''
-        while True:
-            chunk = socket.recv()
-            compressed_data += chunk
-            if len(chunk) < 60000:
-                break
-        data = zlib.decompress(compressed_data)
-        frame_data = pickle.loads(data)
-
-        # Decode and display the image
-        frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
-        sm.write_image(frame)
-        # Control receiving frequency
-        time.sleep(0.01)
-
-class SharedMemoryImage:
-    def __init__(self, img_shape):
-        self.resolution = img_shape#(720, 1280)
-        self.crop_size_w = 0
-        self.crop_size_h = 0
-        self.resolution_cropped = (self.resolution[0]-self.crop_size_h, self.resolution[1] - 2 * self.crop_size_w)
-
-        self.img_shape = (self.resolution_cropped[0], 2 * self.resolution_cropped[1], 3)
-        self.img_height, self.img_width = self.resolution_cropped[:2]
-
-        self.shm = shared_memory.SharedMemory(create=True, size=np.prod(self.img_shape) * np.uint8().itemsize)
-        self.img_array = np.ndarray((self.img_shape[0], self.img_shape[1], 3), dtype=np.uint8, buffer=self.shm.buf)
-        self.lock = Lock()
-
-    def write_image(self, image):
-        with self.lock:
-            np.copyto(self.img_array, image)
-
-    def read_image(self):
-        with self.lock:
-            image_copy = self.img_array.copy()
-            return image_copy
-
-    def cleanup(self):
-        self.shm.close()
-        self.shm.unlink()
-
-class VuerTeleop:
-    def __init__(self, config_file_path):
-        self.resolution = (480,640) #(720, 1280)
-        self.crop_size_w = 0
-        self.crop_size_h = 0
-        self.resolution_cropped = (self.resolution[0]-self.crop_size_h, self.resolution[1]-2*self.crop_size_w)
-
-        self.img_shape = (self.resolution_cropped[0], 2 * self.resolution_cropped[1], 3)
-        self.img_height, self.img_width = self.resolution_cropped[:2]
-
-        self.shm = shared_memory.SharedMemory(create=True, size=np.prod(self.img_shape) * np.uint8().itemsize)
-        self.img_array = np.ndarray((self.img_shape[0], self.img_shape[1], 3), dtype=np.uint8, buffer=self.shm.buf)
-        image_queue = Queue()
-        toggle_streaming = Event()
-        self.tv = OpenTeleVision(self.resolution_cropped, self.shm.name, image_queue, toggle_streaming)
-        self.processor = VuerPreprocessor()
-
-        RetargetingConfig.set_default_urdf_dir('../assets')
-        with Path(config_file_path).open('r') as f:
-            cfg = yaml.safe_load(f)
-        left_retargeting_config = RetargetingConfig.from_dict(cfg['left'])
-        right_retargeting_config = RetargetingConfig.from_dict(cfg['right'])
-        self.left_retargeting = left_retargeting_config.build()
-        self.right_retargeting = right_retargeting_config.build()
-    
-    def step(self):
-        head_mat, left_wrist_mat, right_wrist_mat, left_hand_mat, right_hand_mat = self.processor.process(self.tv)
-        head_rmat = head_mat[:3, :3]
-
-        left_wrist_mat[2, 3] +=0.45
-        right_wrist_mat[2,3] +=0.45
-        left_wrist_mat[0, 3] +=0.20
-        right_wrist_mat[0,3] +=0.20
-
-        left_qpos = self.left_retargeting.retarget(left_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
-        right_qpos = self.right_retargeting.retarget(right_hand_mat[tip_indices])[[4, 5, 6, 7, 10, 11, 8, 9, 0, 1, 2, 3]]
-
-        return head_rmat, left_wrist_mat, right_wrist_mat, left_qpos, right_qpos
+from teleop.open_television.tv_wrapper import TeleVisionWrapper
+from teleop.robot_control.robot_arm import G1_29_ArmController
+from teleop.robot_control.robot_arm_ik import G1_29_ArmIK
+from teleop.robot_control.robot_hand_unitree import Dex3_1_Controller
+from teleop.image_server.image_client import ImageClient
+from teleop.utils.episode_writer import EpisodeWriter
 
 
 if __name__ == '__main__':
-    manager = Manager()
-    image_queue = manager.Queue()
-    teleoperator = VuerTeleop('inspire_hand.yml')
-    h1hand = H1HandController()
-    h1arm = H1ArmController()
-    arm_ik = Arm_IK()
-    sm = SharedMemoryImage((480,640))
-    image_process = Process(target=image_receiver, args=(sm, teleoperator.resolution, teleoperator.crop_size_w, teleoperator.crop_size_h))
-    image_process.start()
-            
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--record', type=bool, default=True, help='save data or not')
+    parser.add_argument('--task_dir', type=str, default='data', help='path to save data')
+    parser.add_argument('--frequency', type=int, default=30.0, help='save data\'s frequency')
+    args = parser.parse_args()
+    print(f"args:{args}\n")
+
+    # image
+    img_shape = (480, 640 * 2, 3)
+    img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
+    img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
+    img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
+    image_receive_thread = threading.Thread(target=img_client.receive_process, daemon=True)
+    image_receive_thread.daemon = True
+    image_receive_thread.start()
+
+    # television and arm
+    tv_wrapper = TeleVisionWrapper(img_shape, img_shm.name)
+    arm_ctrl = G1_29_ArmController()
+    arm_ik = G1_29_ArmIK()
+
+    # hand
+    hand_ctrl = Dex3_1_Controller()
+    left_hand_array = Array('d', 75, lock=True)
+    right_hand_array = Array('d', 75, lock=True)
+    dual_hand_state_array  = Array('d', 14, lock=True) # current left, right hand state data
+    dual_hand_aciton_array = Array('d', 14, lock=True) # current left and right hand action data to be controlled
+    hand_control_process = Process(target=hand_ctrl.control_process, args=(left_hand_array, right_hand_array, dual_hand_state_array, dual_hand_aciton_array))
+    hand_control_process.daemon = True
+    hand_control_process.start()
+    
+    if args.record:
+        recorder = EpisodeWriter(task_dir=args.task_dir, frequency=args.frequency)
+        
     try:
-        user_input = input("Please enter the start signal (enter 's' to start the subsequent program):")
-        if user_input.lower() == 's':
-            while True:
-                armstate = None
-                armv = None 
-                frame = sm.read_image()
-                np.copyto(teleoperator.img_array, np.array(frame))
-                handstate = h1hand.get_hand_state()
+        user_input = input("Please enter the start signal (enter 'r' to start the subsequent program):\n")
+        if user_input.lower() == 'r':
+            arm_ctrl.speed_gradual_max()
+            if args.record:
+                press_key_s_count = 0
+            
+            running = True
+            recording = False
+            while running:
+                start_time = time.time()
+                head_rmat, left_wrist, right_wrist, left_hand, right_hand = tv_wrapper.get_data()
 
-                q_poseList=np.zeros(35)
-                q_tau_ff=np.zeros(35)
-                armstate,armv = h1arm.GetMotorState()
+                # send hand skeleton data to hand_ctrl.control_process
+                left_hand_array[:] = left_hand.flatten()
+                right_hand_array[:] = right_hand.flatten()
 
-                head_rmat, left_pose, right_pose, left_qpos, right_qpos = teleoperator.step()
-                sol_q ,tau_ff, flag = arm_ik.ik_fun(left_pose, right_pose, armstate,armv)
-                
-                if flag:
-                    q_poseList[13:27] = sol_q
-                    q_tau_ff[13:27] = tau_ff
-                else:
-                    q_poseList[13:27] = armstate
-                    q_tau_ff = np.zeros(35)
+                # get current arm motor data. solve ik using motor data and wrist pose, then use ik results to control arms.
+                time_ik_start = time.time()
+                current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()
+                current_lr_arm_dq = arm_ctrl.get_current_dual_arm_dq()
+                sol_q, sol_tauff  = arm_ik.solve_ik(left_wrist, right_wrist, current_lr_arm_q, current_lr_arm_dq)
+                time_ik_end = time.time()
+                # print(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
+                arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
 
-                h1arm.SetMotorPose(q_poseList, q_tau_ff)
+                # record data
+                if args.record:
+                    current_image = img_array.copy()
+                    left_image =  current_image[:, :640]
+                    right_image = current_image[:, 640:]
+                    left_arm_state  = current_lr_arm_q[:7]
+                    right_arm_state = current_lr_arm_q[-7:]
+                    left_hand_state = dual_hand_state_array[:7]
+                    right_hand_state = dual_hand_state_array[-7:]
+                    left_arm_action = sol_q[:7]
+                    right_arm_action = sol_q[-7:]
+                    left_hand_action = dual_hand_aciton_array[:7]
+                    right_hand_action = dual_hand_aciton_array[-7:]
+        
+                    cv2.imshow("record image", current_image)
+                    key = cv2.waitKey(1) & 0xFF
+                    if key == ord('q'):
+                        running = False
+                    elif key == ord('s'):
+                        press_key_s_count += 1
+                        if press_key_s_count % 2 == 1:
+                            print("Start recording...")
+                            recording = True
+                            recorder.create_episode()
+                        else:
+                            print("End recording...")
+                            recording = False
+                            recorder.save_episode()
 
-                if right_pose is not None and left_qpos is not None:
-                    # 4,5: index 6,7: middle, 0,1: pinky, 2,3: ring, 8,9: thumb
-                    right_angles = [1.7 - right_qpos[i] for i in [4, 6, 2, 0]]
-                    right_angles.append(1.2 - right_qpos[8])
-                    right_angles.append(0.5 - right_qpos[9])
+                    if recording:
+                        colors = {}
+                        depths = {}
+                        colors[f"color_{0}"] = left_image
+                        colors[f"color_{1}"] = right_image
+                        states = {
+                            "left_arm": {                                                                    
+                                "qpos":   left_arm_state.tolist(),    # numpy.array -> list
+                                "qvel":   [],                          
+                                "torque": [],                        
+                            }, 
+                            "right_arm": {                                                                    
+                                "qpos":   right_arm_state.tolist(),       
+                                "qvel":   [],                          
+                                "torque": [],                         
+                            },                        
+                            "left_hand": {                                                                    
+                                "qpos":   left_hand_state,            # Array returns a list after slicing
+                                "qvel":   [],                           
+                                "torque": [],                          
+                            }, 
+                            "right_hand": {                                                                    
+                                "qpos":   right_hand_state,       
+                                "qvel":   [],                           
+                                "torque": [],  
+                            }, 
+                            "body": None, 
+                        }
+                        actions = {
+                            "left_arm": {                                   
+                                "qpos":   left_arm_action.tolist(),       
+                                "qvel":   [],       
+                                "torque": [],      
+                            }, 
+                            "right_arm": {                                   
+                                "qpos":   right_arm_action.tolist(),       
+                                "qvel":   [],       
+                                "torque": [],       
+                            },                         
+                            "left_hand": {                                   
+                                "qpos":   left_hand_action,       
+                                "qvel":   [],       
+                                "torque": [],       
+                            }, 
+                            "right_hand": {                                   
+                                "qpos":   right_hand_action,       
+                                "qvel":   [],       
+                                "torque": [], 
+                            }, 
+                            "body": None, 
+                        }
+                        recorder.add_item(colors=colors, depths=depths, states=states, actions=actions)
 
-                    left_angles = [1.7- left_qpos[i] for i in  [4, 6, 2, 0]]
-                    left_angles.append(1.2 - left_qpos[8])
-                    left_angles.append(0.5 - left_qpos[9])
-                    h1hand.crtl(right_angles,left_angles)
+                current_time = time.time()
+                time_elapsed = current_time - start_time
+                sleep_time = max(0, (1 / float(args.frequency)) - time_elapsed)
+                time.sleep(sleep_time)
+                # print(f"main process sleep: {sleep_time}")
 
     except KeyboardInterrupt:
+        img_shm.unlink()
+        img_shm.close()
+        print("KeyboardInterrupt, exiting program...")
+        exit(0)
+    finally:
+        img_shm.unlink()
+        img_shm.close()
+        print("Finally, exiting program...")
         exit(0)

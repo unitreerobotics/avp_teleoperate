@@ -1,0 +1,400 @@
+<robot name="dex3_right">
+  <mujoco>
+    <compiler meshdir="meshes" discardvisual="false" />
+  </mujoco>
+
+  <!-- [CAUTION] uncomment when convert to mujoco -->
+  <!-- <link name="world"></link>
+  <joint name="floating_base_joint" type="floating">
+    <parent link="world"/>
+    <child link="pelvis"/>
+  </joint> -->
+
+  <link name="right_hand_palm_link">
+    <inertial>
+      <origin xyz="0.06214634836 0.00050869656 0.00058171093" rpy="-1.57 1.57 0" />
+      <mass value="0.37283854" />
+      <inertia ixx="0.00027535181027" ixy="0.00001595519465" ixz="0.00000242161890"
+        iyy="0.00053951827219" iyz="-0.00000042279435" izz="0.00039623390907" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_palm_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_palm_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_zero_joint" type="revolute">
+    <origin xyz="0.028 0 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <parent link="right_hand_palm_link" />
+    <child link="right_hand_zero_link" />
+    <limit effort="2.45" velocity="6.857" lower="-1.04719755" upper="1.04719755" />
+  </joint>
+  <link name="right_hand_zero_link">
+    <inertial>
+      <origin xyz="-0.00035441315 0.01329887312 -0.00041236207" rpy="0 0 0" />
+      <mass value="0.08033018" />
+      <inertia ixx="0.00001322529836" ixy="-0.00000008155993" ixz="-0.00000002632547"
+        iyy="0.00001215546138" iyz="-0.00000064625786" izz="0.00001368834887" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_zero_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_zero_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_one_joint" type="revolute">
+    <origin xyz="0 0.0246 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_zero_link" />
+    <child link="right_hand_one_link" />
+    <limit effort="0.7" velocity="24" lower="-1.04719755" upper="0.72431163" />
+  </joint>
+  <link name="right_hand_one_link">
+    <inertial>
+      <origin xyz="0.00362060191 0.04044395878 0.00029771094" rpy="0 0 0" />
+      <mass value="0.05619628" />
+      <inertia ixx="0.00001234776425" ixy="-0.00000026810498" ixz="0.00000008482929"
+        iyy="0.00000501619054" iyz="-0.00000007819408" izz="0.00001212011567" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_one_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_one_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_two_joint" type="revolute">
+    <origin xyz="0.0055 0.0528 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_one_link" />
+    <child link="right_hand_two_link" />
+    <limit effort="0.7" velocity="24" lower="-2.09439510" upper="0" />
+  </joint>
+  <link name="right_hand_two_link">
+    <inertial>
+      <origin xyz="-0.00081405957 0.03456206723 -0.00012979919" rpy="0 0 0" />
+      <mass value="0.02487314" />
+      <inertia ixx="0.00000859888903" ixy="-0.00000021727392" ixz="0.00000000850093"
+        iyy="0.00000198874543" iyz="-0.00000008230043" izz="0.00000768992891" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_two_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_two_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_three_joint" type="revolute">
+    <origin xyz="0.1 0.0017 0.0285" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_palm_link" />
+    <child link="right_hand_three_link" />
+    <limit effort="0.7" velocity="24" lower="-0.19198621" upper="1.83259571" />
+  </joint>
+  <link name="right_hand_three_link">
+    <inertial>
+      <origin xyz="0.04044395878 0.00362060191 -0.00028771094" rpy="0 0 0" />
+      <mass value="0.05619628" />
+      <inertia ixx="0.00000501619054" ixy="-0.00000026810498" ixz="0.00000007819408"
+        iyy="0.00001234776425" iyz="-0.00000008482929" izz="0.00001212011567" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_three_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_three_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_four_joint" type="revolute">
+    <origin xyz="0.0528 0.0055 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_three_link" />
+    <child link="right_hand_four_link" />
+    <limit effort="0.7" velocity="24" lower="0" upper="2.09439510" />
+  </joint>
+  <link name="right_hand_four_link">
+    <inertial>
+      <origin xyz="0.03456206723 -0.00081405957 0.00012979919" rpy="0 0 0" />
+      <mass value="0.02487314" />
+      <inertia ixx="0.00000198874543" ixy="-0.00000021727392" ixz="0.00000008230043"
+        iyy="0.00000859888903" iyz="-0.00000000850093" izz="0.00000768992891" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_four_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_four_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_five_joint" type="revolute">
+    <origin xyz="0.1 0.0017 -0.0285" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_palm_link" />
+    <child link="right_hand_five_link" />
+    <limit effort="0.7" velocity="24" lower="-0.19198621" upper="1.83259571" />
+  </joint>
+  <link name="right_hand_five_link">
+    <inertial>
+      <origin xyz="0.04044395878 0.00362060191 -0.00028771094" rpy="0 0 0" />
+      <mass value="0.05619628" />
+      <inertia ixx="0.00000501619054" ixy="-0.00000026810498" ixz="0.00000007819408"
+        iyy="0.00001234776425" iyz="-0.00000008482929" izz="0.00001212011567" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_five_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_five_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="right_hand_six_joint" type="revolute">
+    <origin xyz="0.0528 0.0055 0" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <parent link="right_hand_five_link" />
+    <child link="right_hand_six_link" />
+    <limit effort="0.7" velocity="24" lower="0" upper="2.09439510" />
+  </joint>
+  <link name="right_hand_six_link">
+    <inertial>
+      <origin xyz="0.03456206723 -0.00081405957 0.00012979919" rpy="0 0 0" />
+      <mass value="0.02487314" />
+      <inertia ixx="0.00000198874543" ixy="-0.00000021727392" ixz="0.00000008230043"
+        iyy="0.00000859888903" iyz="-0.00000000850093" izz="0.00000768992891" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_six_link.STL" />
+      </geometry>
+      <material name="white">
+        <color rgba="0.7 0.7 0.7 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/right_hand_six_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+<!-- virtual auxiliary link -->
+
+<!-- for openxr / apple vision pro, good retarget with thumb and index. -->
+  <link name="base_link_thumb" />
+  <joint name="base_thumb" type="fixed">
+    <parent link="base_link_thumb" />
+    <child link="base_link" />
+    <origin rpy="0 0 0" xyz="0.01 0.01 0.03" />
+  </joint>
+
+  <link name="base_link" />
+  <joint name="base" type="fixed">
+    <parent link="base_link" />
+    <child link="right_hand_palm_link" />
+    <origin rpy="3.14 0 -1.57" xyz="-0.02 0 0.01" />
+  </joint>
+
+  <link name="thumb_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="index_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="middle_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="thumb_tip_joint" type="fixed">
+    <parent link="right_hand_two_link" />
+    <child link="thumb_tip" />
+    <origin rpy="0 0 0" xyz="0.003 0.06 0" />
+  </joint>
+
+  <joint name="middle_joint" type="fixed">
+    <parent link="right_hand_four_link" />
+    <child link="middle_tip" />
+    <origin rpy="0 0 0" xyz="0.06 0.003 0" />
+  </joint>
+
+  <joint name="index_joint" type="fixed">
+    <parent link="right_hand_six_link" />
+    <child link="index_tip" />
+    <origin rpy="0 0 0" xyz="0.06 0.003 0" />
+  </joint>
+
+
+<!-- for mediapipe -->
+ <!-- <link name="base_link_thumb" />
+ <joint name="base_thumb" type="fixed">
+   <parent link="base_link_thumb" />
+   <child link="base_link" />
+   <origin rpy="0 0 0" xyz="-0.04 -0.05 -0.06" />
+ </joint>
+
+ <link name="base_link" />
+ <joint name="base" type="fixed">
+   <parent link="base_link" />
+   <child link="right_hand_palm_link" />
+   <origin rpy="0 -1.57 -1.57" xyz="0.02 -0.01 0" />
+ </joint>
+
+   <link name="thumb_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="index_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1" />
+      </material>
+    </visual>
+  </link>
+
+  <link name="middle_tip">
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1" />
+      </material>
+    </visual>
+  </link>
+
+  <joint name="thumb_tip_joint" type="fixed">
+    <parent link="right_hand_two_link" />
+    <child link="thumb_tip" />
+    <origin rpy="0 0 0" xyz="0.003 0.06 0" />
+  </joint>
+
+  <joint name="middle_joint" type="fixed">
+    <parent link="right_hand_four_link" />
+    <child link="middle_tip" />
+    <origin rpy="0 0 0" xyz="0.06 0.003 0" />
+  </joint>
+
+  <joint name="index_joint" type="fixed">
+    <parent link="right_hand_six_link" />
+    <child link="index_tip" />
+    <origin rpy="0 0 0" xyz="0.06 0.003 0" />
+  </joint> -->
+
+</robot>

@@ -1,13 +1,38 @@
 
-# Video Demo
+# 📺 Video Demo
 <img src="./img/1.webp" autoplay loop="loop" style="width: 49%" controls></img><img src="./img/2.webp" autoplay loop="loop" style="width: 49%" controls></img>
 
-# Introduction
-This repository implements teleoperation of the humanoid robot Unitree H1_2 using Apple Vision Pro.
+# 0. 📖 Introduction
+This repository implements teleoperation of the **Unitree humanoid robot** using **Apple Vision Pro**.
+
+Here are the robots that will be supported,
+
+<table>
+  <tr>
+    <th style="text-align: center;"> &#129302; Robot </th>
+    <th style="text-align: center;"> &#9898; Status </th>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> G1(29DoF) + Dex3-1 </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> G1(23DoF) </td>
+    <td style="text-align: center;"> &#9201; In Progress </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> H1(Arm 4DoF) </td>
+    <td style="text-align: center;"> &#9201; In Progress </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> H1_2(Arm 7DoF) + Inspire </td>
+    <td style="text-align: center;"> &#9201; In Progress </td>
+  </tr>
+</table>
 
 
 
-# Prerequisites
+# 1. 📦 Prerequisites
 
 We tested our code on Ubuntu 20.04 and Ubuntu 22.04, other operating systems may be configured differently.  
 
@@ -15,7 +40,7 @@ For more information, you can refer to [Official Documentation ](https://support
 
 
 
-## inverse kinematics
+## 1.1 🦾  inverse kinematics 
 
 ```bash
 conda create -n tv python=3.8
@@ -26,7 +51,7 @@ pip install meshcat
 pip install casadi
 ```
 
-## unitree_dds_wrapper
+## 1.2 🕹️ unitree_dds_wrapper
 
 ```bash
 # Install the Python version of the unitree_dds_wrapper.
@@ -35,11 +60,13 @@ cd unitree_dds_wrapper/python
 pip install -e .
 ```
 
+>  p.s. This is a temporary version, and it will be replaced with [unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python) in the future.
 
 
-## TeleVision and Apple Vision Pro configuration
 
-### basic
+# 2. 🛠️ TeleVision and Apple Vision Pro configuration
+
+## 2.1 📥 basic
 
 ```bash
 cd ~
@@ -49,13 +76,7 @@ pip install -r requirements.txt
 cd act/detr && pip install -e .
 ```
 
-### Isaac Gym
-
-If you want to try teleoperation example in a simulated environment (`teleop_hand.py`):
-1. Download Isaac Gym: https://developer.nvidia.com/isaac-gym/download
-2. Extracting to the current directory, go to the `IsaacGym_Preview_4_Package/isaacgym/python` directory and execute the command: `pip install -e .`
-
-### Local streaming
+## 2.2 🔌 Local streaming
 
 **Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the VisionPro and the ubuntu machine to the same router.
 
@@ -66,7 +87,9 @@ If you want to try teleoperation example in a simulated environment (`teleop_han
 ifconfig | grep inet
 ```
 
-Suppose the local ip address of the ubuntu machine is `192.168.123.2`
+Suppose the local ip address of the **Host machine** is `192.168.123.2`
+
+> p.s. you can use `ifconfig` command to check your **Host machine** ip address.
 
 3. create certificate:
 
@@ -96,44 +119,70 @@ Copy the `rootCA.pem` via AirDrop to VisionPro and install it.
 
 Settings > General > About > Certificate Trust Settings. Under "Enable full trust for root certificates", turn on trust for the certificate.
 
-settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Features
+Settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Features.
 
-6. open the browser on Safari on VisionPro and go to https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
+## 2.3 🔎 Test environment
 
-7. Click `Enter VR` and `Allow` to start the VR session.
+This step is to verify that the environment is installed correctly.
 
-### Simulation Teleoperation Example
-1. After setup up streaming with either local or network streaming following the above instructions, you can try teleoperating two robot hands in Issac Gym:
+1. Download Isaac Gym: https://developer.nvidia.com/isaac-gym/download
+
+    Extracting to the current directory, go to the `IsaacGym_Preview_4_Package/isaacgym/python` directory and execute the command:
 
     ```bash
-    cd teleop && python teleop_hand.py
+    pip install -e .
     ```
 
-2. Go to your vuer site on VisionPro, click `Enter VR` and `Allow` to enter immersive environment.
+2. After setup up streaming with local following the above instructions, you can try teleoperating two robot hands in Issac Gym:
 
-3. See your hands in 3D!
+    ```bash
+    cd teleop
+    python teleop_test_gym.py
+    ```
+
+3. Wear your Apple Vision Pro device.
+
+4. Open Safari on Apple Vision Pro and visit: https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
+
+    > p.s. This IP address should match the IP address of your **Host machine**.
+
+5. Click `Enter VR` and `Allow` to start the VR session.
+
+6. See your hands in 3D!
 
 <div style="center">
   <img src="https://oss-global-cdn.unitree.com/static/d079e884c3074e8495f81e78c9586f7f_2556x1179.jpg" width="50%">
 </div>
 
 
-
-
-
-<!-- <p style="text-align: center;">
-  <img src="https://doc-cdn.unitree.com/static/2024/7/25/4b1b2327d4774abfbe8ef1c084d81cd7_2686x1627.png"  style="display: block; margin: auto; width: 30%;">
-</p> -->
-
-
-
-# Usage
+# 3. 🚀 Usage
 
 Please read the  [Official Documentation ](https://support.unitree.com/home/zh/Teleoperation) at least once before starting this program.
 
-## Dexterous hands service
 
-You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program and copy it to PC of  Unitree H1_2. On Unitree H1_2's PC, execute command:
+## 3.1 🖼️ Image Server
+
+Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to the **PC2** of Unitree Robot (G1/H1/H1_2/etc.), and execute the following command **in the PC2**:
+
+```bash
+# Now located in Unitree Robot PC2
+python image_server.py
+# You can see the terminal output as follows:
+# Image server has started, waiting for client connections...
+# Image Resolution: width is x, height is x
+```
+
+After image service is started, you can use `image_client.py` **in the Host** terminal to test whether the communication is successful:
+
+```bash
+python image_client.py
+```
+
+## 3.2 ✋ Inspire hands Server (optional)
+
+You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program. Copy it to PC of  Unitree H1_2. 
+
+On Unitree H1_2's PC, execute command:
 
 ```bash
 sudo apt install libboost-all-dev libspdlog-dev
@@ -149,59 +198,82 @@ sudo ./inspire_hand -s /dev/ttyUSB0
 
 If two hands open and close continuously, it indicates success. Once successful, close the `./h1_hand_example` program in Terminal 2.
 
+## 3.3 🚀 Start
 
-## Image Server
+> ![Warning](https://img.shields.io/badge/Warning-Important-red) 
+>
+> 1. Everyone must keep a safe distance from the robot to prevent any potential danger!
+>
+> 2. Please make sure to read the [Official Documentation](https://support.unitree.com/home/zh/Teleoperation) at least once before running this program.
 
-Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to the PC of Unitree H1_2, and execute the following command **in the PC**:
+It's best to have two operators to run this program, referred to as **Operator A** and **Operator B**.
 
-```bash
-sudo python image_server.py
-```
-
-After image service is started, you can use `image_client.py` **in the Host** terminal to test whether the communication is successful:
-
-```bash
-python image_client.py
-```
-
-## Start
-
-> Warning : All persons must maintain an adequate safety distance from the robot to avoid danger!
+Now, **Operator B** execute the following command on **Host machine** :
 
 ```bash
 python teleop_hand_and_arm.py
 ```
 
+And then, **Operator A**
 
+1. Wear your Apple Vision Pro device.
 
-# Codebase Tutorial
+2. Open Safari on Apple Vision Pro and visit : https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
 
-The overall structure of the code remains the same as TeleVision, and we only focus on the modified file directories related to Unitree Robot.
+   > p.s. This IP address should match the IP address of your **Host machine**.
 
-    avp_teleoperate/
-    │
-    ├── act                       [Documents Related to ACT Policy for Imitation Learning]
-    │
-    ├── assets                    [Storage of robot URDF-related files]
-    │  
-    ├── scripts
-    │
-    ├── teleop
-    │   ├── image_server/         [Image Transfer Server and Client Code]
-    │   │     ├── image_client.py [Client (only used to test whether the image stream service is OK, not used for teleoperation)]
-    │   │     ├── image_server.py [Capture images from binocular cameras and send via network (performed on Unitree H1_2)]
-    │   │         
-    │   ├── robot_control/          [Storage of IK solver, arm and hand control related documents]
-    │   │      ├── robot_arm_ik.py  [Inverse kinematics of the arm]  
-    │   │      ├── robot_arm.py     [Control dual arm joints and lock the others]
-    │   │      ├── robot_hand.py    [Control hand joints]
-    │   │
-    │   │──teleop_hand_and_arm.py   [Startup execution code for teleoperation]
-    |   |——teleop_hand.py           [Can be used for testing the environment configuration]
+3. Click `Enter VR` and `Allow` to start the VR session.
+
+When host terminal outputs "Please enter the start signal (enter 'r' to start the subsequent program):", **Operator B** can start teleoperation program by pressing the **r** key in the terminal.
+
+At this time, **Operator A** can remotely control the robot's arms and dexterous hands.
+
+Next, **Operator B** can press **s** key to begin recording data in the 'record image' window that opens, and press **s** again to stop. This can be repeated as necessary.
+
+## 3.4 🔚 Exit
+
+To exit the program, **Operator B** can press the **q** key in the 'record image'  window.  
+
+>  ![Warning](https://img.shields.io/badge/Warning-Important-red) 
+>
+> To avoid damaging the robot, **Operator A** need to make sure the robot's arms are in a natural down position before exiting.
 
 
 
-# Acknowledgement
+# 4. 🗺️ Codebase Tutorial
+
+```
+avp_teleoperate/
+│
+├── assets                    [Storage of robot URDF-related files]
+│
+├── teleop
+│   ├── image_server
+│   │     ├── image_client.py [Used to receive image data from the robot image server]
+│   │     ├── image_server.py [Capture images from cameras and send via network (Running on robot's on-board computer)]
+│   │
+│   ├── open_television
+│   │      ├── television.py    [Using Vuer to capture wrist and hand data from apple vision pro]  
+│   │      ├── tv_wrapper.py    [Post-processing of captured data]
+│   │
+│   ├── robot_control
+│   │      ├── robot_arm_ik.py        [Inverse kinematics of the arm]  
+│   │      ├── robot_arm.py           [Control dual arm joints and lock the others]
+│   │      ├── robot_hand_inspire.py  [Control inspire hand joints]
+│   │      ├── robot_hand_unitree.py  [Control unitree hand joints]
+│   │
+│   ├── utils
+│   │      ├── episode_writer.py          [Used to record data for imitation learning]  
+│   │      ├── mat_tool.py                [Some small math tools]
+│   │      ├── weighted_moving_filter.py  [For filtering joint data]
+│   │
+│   │──teleop_hand_and_arm.py   [Startup execution code for teleoperation]
+|   |——teleop_test_gym.py       [Can be used to verify that the environment is installed correctly]
+```
+
+
+
+# 5. 🙏 Acknowledgement
 
 This code builds upon following open-source code-bases. Please visit the URLs to see the respective LICENSES:
 
@@ -215,3 +287,4 @@ This code builds upon following open-source code-bases. Please visit the URLs to
 8) https://github.com/unitreerobotics/unitree_dds_wrapper
 9) https://github.com/tonyzhaozh/act
 10) https://github.com/facebookresearch/detr
+11) https://github.com/Dingry/BunnyVisionPro
