@@ -9,5 +9,6 @@ __MACOSX/
 *.pem
 *.webm
 *.jpg
+!video_cover.jpg
 *.svo
 *.png
