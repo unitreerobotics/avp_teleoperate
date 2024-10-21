@@ -1,6 +1,20 @@
+<div align="center">
+  <h1 align="center"> avp_teleoperate </h1>
+  <h3 align="center"> Unitree Robotics </h3>
+  <p align="center">
+    <a> English </a> | <a href="README_zh-CN.md">中文</a>
+  </p>
+</div>
 
 # 📺 Video Demo
-<img src="./img/1.webp" autoplay loop="loop" style="width: 49%" controls></img><img src="./img/2.webp" autoplay loop="loop" style="width: 49%" controls></img>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo">
+    <img src="https://img.youtube.com/vi/pNjr2f_XHoo/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
+  </a>
+</p>
+
+
 
 # 0. 📖 Introduction
 This repository implements teleoperation of the **Unitree humanoid robot** using **Apple Vision Pro**.
@@ -13,22 +27,27 @@ Here are the robots that will be supported,
     <th style="text-align: center;"> &#9898; Status </th>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1(29DoF) + Dex3-1 </td>
+    <td style="text-align: center;"> G1 (29DoF) + Dex3-1 </td>
     <td style="text-align: center;"> &#9989; Completed </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1(23DoF) </td>
+    <td style="text-align: center;"> G1 (23DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> H1(Arm 4DoF) </td>
+    <td style="text-align: center;"> H1 (Arm 4DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> H1_2(Arm 7DoF) + Inspire </td>
+    <td style="text-align: center;"> H1_2 (Arm 7DoF) + Inspire </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> ··· </td>
+    <td style="text-align: center;"> ··· </td>
   </tr>
 </table>
+
 
 
 
@@ -78,10 +97,10 @@ cd act/detr && pip install -e .
 
 ## 2.2 🔌 Local streaming
 
-**Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the VisionPro and the ubuntu machine to the same router.
+**Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Apple Vision Pro and the ubuntu **Host machine** to the same router.
 
 1. install mkcert: https://github.com/FiloSottile/mkcert
-2. check local ip address:
+2. check **Host machine** local ip address:
 
 ```bash
 ifconfig | grep inet
@@ -97,7 +116,7 @@ Suppose the local ip address of the **Host machine** is `192.168.123.2`
 mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
 ```
 
-ps. place the generated cert.pem and key.pem files in `teleop`.
+place the generated `cert.pem` and `key.pem` files in `teleop`
 
 ```bash
 cp cert.pem key.pem ~/avp_teleoperate/teleop/
@@ -109,13 +128,13 @@ cp cert.pem key.pem ~/avp_teleoperate/teleop/
 sudo ufw allow 8012
 ```
 
-5. install ca-certificates on VisionPro:
+5. install ca-certificates on Apple Vision Pro:
 
 ```
 mkcert -CAROOT
 ```
 
-Copy the `rootCA.pem` via AirDrop to VisionPro and install it.
+Copy the `rootCA.pem` via AirDrop to Apple Vision Pro and install it.
 
 Settings > General > About > Certificate Trust Settings. Under "Enable full trust for root certificates", turn on trust for the certificate.
 
@@ -162,10 +181,13 @@ Please read the  [Official Documentation ](https://support.unitree.com/home/zh/T
 
 ## 3.1 🖼️ Image Server
 
-Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to the **PC2** of Unitree Robot (G1/H1/H1_2/etc.), and execute the following command **in the PC2**:
+Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to the **Development Computing Unit PC2** of Unitree Robot (G1/H1/H1_2/etc.), and execute the following command **in the PC2**:
 
 ```bash
-# Now located in Unitree Robot PC2
+# p.s.1 You can transfer image_server.py to PC2 via the scp command and then use ssh to remotely login to PC2 to execute it.
+# p.s.2 The image transfer program is currently configured for binocular rgb cameras.
+
+# Now located in Unitree Robot PC2 terminal
 python image_server.py
 # You can see the terminal output as follows:
 # Image server has started, waiting for client connections...
@@ -180,9 +202,9 @@ python image_client.py
 
 ## 3.2 ✋ Inspire hands Server (optional)
 
-You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program. Copy it to PC of  Unitree H1_2. 
+You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program. Copy it to **PC2** of  Unitree robots. 
 
-On Unitree H1_2's PC, execute command:
+On Unitree robot's **PC2**, execute command:
 
 ```bash
 sudo apt install libboost-all-dev libspdlog-dev
@@ -230,13 +252,15 @@ At this time, **Operator A** can remotely control the robot's arms and dexterous
 
 Next, **Operator B** can press **s** key to begin recording data in the 'record image' window that opens, and press **s** again to stop. This can be repeated as necessary.
 
+> p.s. Recorded data is stored in `avp_teleoperate/teleop/data` by default, with usage instructions at this repo:  [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion).
+
 ## 3.4 🔚 Exit
 
 To exit the program, **Operator B** can press the **q** key in the 'record image'  window.  
 
 >  ![Warning](https://img.shields.io/badge/Warning-Important-red) 
 >
-> To avoid damaging the robot, **Operator A** need to make sure the robot's arms are in a natural down position before exiting.
+> To avoid damaging the robot, it's best to ensure that **Operator A** positions the robot's arms in a naturally lowered or appropriate position before **Operator B** presses **q** to exit.
 
 
 
