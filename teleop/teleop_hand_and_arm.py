@@ -2,7 +2,7 @@ import numpy as np
 import time
 import argparse
 import cv2
-from multiprocessing import Process, shared_memory, Array
+from multiprocessing import shared_memory, Array, Lock
 import threading
 
 import os 
@@ -21,14 +21,21 @@ from teleop.utils.episode_writer import EpisodeWriter
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--record', type=bool, default=True, help='save data or not')
     parser.add_argument('--task_dir', type=str, default='data', help='path to save data')
     parser.add_argument('--frequency', type=int, default=30.0, help='save data\'s frequency')
+
+    parser.add_argument('--record', action='store_true', help='Save data or not')
+    parser.add_argument('--no-record', dest='record', action='store_false', help='Do not save data')
+    parser.set_defaults(record=False)
+
+    parser.add_argument('--binocular', action='store_true', help='Use binocular camera')
+    parser.add_argument('--monocular', dest='binocular', action='store_false', help='Use monocular camera')
+    parser.set_defaults(binocular=True)
     args = parser.parse_args()
     print(f"args:{args}\n")
 
     # image
-    img_shape = (480, 640 * 2, 3)
+    img_shape = (720, 2560, 3)
     img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
     img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
     img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
@@ -37,19 +44,17 @@ if __name__ == '__main__':
     image_receive_thread.start()
 
     # television and arm
-    tv_wrapper = TeleVisionWrapper(img_shape, img_shm.name)
+    tv_wrapper = TeleVisionWrapper(args.binocular, img_shape, img_shm.name)
     arm_ctrl = G1_29_ArmController()
     arm_ik = G1_29_ArmIK()
 
     # hand
-    hand_ctrl = Dex3_1_Controller()
-    left_hand_array = Array('d', 75, lock=True)
-    right_hand_array = Array('d', 75, lock=True)
-    dual_hand_state_array  = Array('d', 14, lock=True) # current left, right hand state data
-    dual_hand_aciton_array = Array('d', 14, lock=True) # current left and right hand action data to be controlled
-    hand_control_process = Process(target=hand_ctrl.control_process, args=(left_hand_array, right_hand_array, dual_hand_state_array, dual_hand_aciton_array))
-    hand_control_process.daemon = True
-    hand_control_process.start()
+    left_hand_array = Array('d', 75, lock=True)         # [input]
+    right_hand_array = Array('d', 75, lock=True)        # [input]
+    dual_hand_data_lock = Lock()
+    dual_hand_state_array = Array('d', 14, lock=False)  # [output] current left, right hand state(14) data.
+    dual_hand_action_array = Array('d', 14, lock=False) # [output] current left, right hand action(14) data.
+    hand_ctrl = Dex3_1_Controller(left_hand_array, right_hand_array, dual_hand_data_lock, dual_hand_state_array, dual_hand_action_array)
     
     if args.record:
         recorder = EpisodeWriter(task_dir=args.task_dir, frequency=args.frequency)
@@ -71,10 +76,12 @@ if __name__ == '__main__':
                 left_hand_array[:] = left_hand.flatten()
                 right_hand_array[:] = right_hand.flatten()
 
-                # get current arm motor data. solve ik using motor data and wrist pose, then use ik results to control arms.
-                time_ik_start = time.time()
+                # get current state data.
                 current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()
                 current_lr_arm_dq = arm_ctrl.get_current_dual_arm_dq()
+
+                # solve ik using motor data and wrist pose, then use ik results to control arms.
+                time_ik_start = time.time()
                 sol_q, sol_tauff  = arm_ik.solve_ik(left_wrist, right_wrist, current_lr_arm_q, current_lr_arm_dq)
                 time_ik_end = time.time()
                 # print(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
@@ -82,18 +89,18 @@ if __name__ == '__main__':
 
                 # record data
                 if args.record:
+                    with dual_hand_data_lock:
+                        left_hand_state = dual_hand_state_array[:7]
+                        right_hand_state = dual_hand_state_array[-7:]
+                        left_hand_action = dual_hand_action_array[:7]
+                        right_hand_action = dual_hand_action_array[-7:]
+
                     current_image = img_array.copy()
-                    left_image =  current_image[:, :640]
-                    right_image = current_image[:, 640:]
                     left_arm_state  = current_lr_arm_q[:7]
                     right_arm_state = current_lr_arm_q[-7:]
-                    left_hand_state = dual_hand_state_array[:7]
-                    right_hand_state = dual_hand_state_array[-7:]
                     left_arm_action = sol_q[:7]
                     right_arm_action = sol_q[-7:]
-                    left_hand_action = dual_hand_aciton_array[:7]
-                    right_hand_action = dual_hand_aciton_array[-7:]
-        
+
                     cv2.imshow("record image", current_image)
                     key = cv2.waitKey(1) & 0xFF
                     if key == ord('q'):
@@ -101,19 +108,24 @@ if __name__ == '__main__':
                     elif key == ord('s'):
                         press_key_s_count += 1
                         if press_key_s_count % 2 == 1:
-                            print("Start recording...")
+                            print("==> Start recording...")
                             recording = True
                             recorder.create_episode()
+                            print("==> Create episode ok.")
                         else:
-                            print("End recording...")
+                            print("==> End recording...")
                             recording = False
                             recorder.save_episode()
+                            print("==> Save episode ok.")
 
                     if recording:
                         colors = {}
                         depths = {}
-                        colors[f"color_{0}"] = left_image
-                        colors[f"color_{1}"] = right_image
+                        if args.binocular:
+                            colors[f"color_{0}"] = current_image[:, :img_shape[1]//2]
+                            colors[f"color_{1}"] = current_image[:, img_shape[1]//2:]
+                        else:
+                            colors[f"color_{0}"] = current_image
                         states = {
                             "left_arm": {                                                                    
                                 "qpos":   left_arm_state.tolist(),    # numpy.array -> list
@@ -126,7 +138,7 @@ if __name__ == '__main__':
                                 "torque": [],                         
                             },                        
                             "left_hand": {                                                                    
-                                "qpos":   left_hand_state,            # Array returns a list after slicing
+                                "qpos":   left_hand_state,           
                                 "qvel":   [],                           
                                 "torque": [],                          
                             }, 

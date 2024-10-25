@@ -11,9 +11,13 @@ Value = context._default_context.Value
 
 
 class TeleVision:
-    def __init__(self, img_shape, img_shm_name, cert_file="./cert.pem", key_file="./key.pem", ngrok=False):
+    def __init__(self, binocular, img_shape, img_shm_name, cert_file="./cert.pem", key_file="./key.pem", ngrok=False):
+        self.binocular = binocular
         self.img_height = img_shape[0]
-        self.img_width  = img_shape[1] // 2
+        if binocular:
+            self.img_width  = img_shape[1] // 2
+        else:
+            self.img_width  = img_shape[1]
 
         if ngrok:
             self.vuer = Vuer(host='0.0.0.0', queries=dict(grid=False), queue_len=3)
@@ -25,8 +29,11 @@ class TeleVision:
 
         existing_shm = shared_memory.SharedMemory(name=img_shm_name)
         self.img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=existing_shm.buf)
-        self.vuer.spawn(start=False)(self.main_image)
-        # self.vuer.spawn(start=False)(self.main_image_stereo)
+
+        if binocular:
+            self.vuer.spawn(start=False)(self.main_image_binocular)
+        else:
+            self.vuer.spawn(start=False)(self.main_image_monocular)
 
         self.left_hand_shared = Array('d', 16, lock=True)
         self.right_hand_shared = Array('d', 16, lock=True)
@@ -60,11 +67,11 @@ class TeleVision:
         except: 
             pass
     
-    async def main_image(self, session, fps=60):
+    async def main_image_binocular(self, session, fps=60):
         session.upsert @ Hands(fps=fps, stream=True, key="hands", showLeft=False, showRight=False)
         while True:
             display_image = cv2.cvtColor(self.img_array, cv2.COLOR_BGR2RGB)
-            aspect_ratio = self.img_width / self.img_height
+            # aspect_ratio = self.img_width / self.img_height
             session.upsert(
                 [
                     ImageBackground(
@@ -97,6 +104,28 @@ class TeleVision:
             )
             # 'jpeg' encoding should give you about 30fps with a 16ms wait in-between.
             await asyncio.sleep(0.016 * 2)
+
+    async def main_image_monocular(self, session, fps=60):
+        session.upsert @ Hands(fps=fps, stream=True, key="hands", showLeft=False, showRight=False)
+        while True:
+            display_image = cv2.cvtColor(self.img_array, cv2.COLOR_BGR2RGB)
+            # aspect_ratio = self.img_width / self.img_height
+            session.upsert(
+                [
+                    ImageBackground(
+                        display_image,
+                        aspect=1.778,
+                        height=1,
+                        distanceToCamera=1,
+                        format="jpeg",
+                        quality=50,
+                        key="background-mono",
+                        interpolate=True,
+                    ),
+                ],
+                to="bgChildren",
+            )
+            await asyncio.sleep(0.016)
 
     @property
     def left_hand(self):
@@ -142,7 +171,7 @@ if __name__ == '__main__':
     image_receive_thread.start()
 
     # television
-    tv = TeleVision(img_shape, img_shm.name)
+    tv = TeleVision(True, img_shape, img_shm.name)
     print("vuer unit test program running...")
     print("you can press ^C to interrupt program.")
     while True:

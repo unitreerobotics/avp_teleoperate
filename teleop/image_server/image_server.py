@@ -5,16 +5,32 @@ import struct
 from collections import deque
 
 class ImageServer:
-    def __init__(self, fps = 30, port = 5555, Unit_Test = False):
+    def __init__(self, img_shape = (480, 640 * 2, 3), fps = 30, port = 5555, Unit_Test = False):
+        """
+        img_shape: User's expected camera resolution shape (H, W, C). 
+        
+        p.s.1: 'W' of binocular camera according to binocular width (instead of monocular).
+
+        p.s.2: User expectations are not necessarily the end result. The final img_shape value needs to be determined from \
+               the terminal output (i.e. "Image Resolution: width is ···")
+        
+        fps: user's expected camera frames per second.
+        
+        port: The port number to bind to, where you can receive messages from subscribers.
+        
+        Unit_Test: When both server and client are True, it can be used to test the image transfer latency, \
+                   network jitter, frame loss rate and other information.
+        """
+        self.img_shape = img_shape
         self.fps = fps
         self.port = port
         self.enable_performance_eval = Unit_Test
 
-        # initiate binocular camera: 480 * (640 * 2)
+        # initiate camera
         self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640 * 2)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.img_shape[1])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.img_shape[0])
         self.cap.set(cv2.CAP_PROP_FPS, self.fps)
 
         # set ZeroMQ context and socket
@@ -91,6 +107,6 @@ class ImageServer:
             self._close()
 
 if __name__ == "__main__":
-    # server = ImageServer(Unit_Test = True)   # test
-    server = ImageServer(Unit_Test = False)  # deployment
+    # server = ImageServer(img_shape = (720, 640 * 2, 3), Unit_Test = True)   # test
+    server = ImageServer(img_shape = (720, 1280 * 2, 3), Unit_Test = False)  # deployment
     server.send_process()

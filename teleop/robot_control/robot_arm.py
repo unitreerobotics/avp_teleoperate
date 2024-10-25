@@ -1,13 +1,12 @@
 import numpy as np
 import threading
 import time
-
-from unitree_dds_wrapper.idl import unitree_hg
-from unitree_dds_wrapper.publisher import Publisher
-from unitree_dds_wrapper.subscription import Subscription
-
-import struct
 from enum import IntEnum
+
+from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize # dds
+from unitree_sdk2py.idl.unitree_hg.msg.dds_ import LowCmd_, LowState_                                 # idl
+from unitree_sdk2py.idl.default import unitree_hg_msg_dds__LowCmd_
+from unitree_sdk2py.utils.crc import CRC
 
 kTopicLowCommand = "rt/lowcmd"
 kTopicLowState = "rt/lowstate"
@@ -42,16 +41,6 @@ class G1_29_ArmController:
         self.q_target = np.zeros(14)
         self.tauff_target = np.zeros(14)
 
-        self.msg = unitree_hg.msg.dds_.LowCmd_()
-        self.msg.mode_machine = 3 # g1 is 3, h1_2 is 4
-        self.__packFmtHGLowCmd = '<2B2x' + 'B3x5fI' * 35 + '5I'
-        self.msg.head = [0xFE, 0xEF]
-        
-        self.lowcmd_publisher = Publisher(unitree_hg.msg.dds_.LowCmd_, kTopicLowCommand)
-        self.lowstate_subscriber = Subscription(unitree_hg.msg.dds_.LowState_, kTopicLowState)
-
-        self.lowstate_buffer = DataBuffer()
-
         self.kp_high = 100.0
         self.kd_high = 3.0
         self.kp_low = 80.0
@@ -67,14 +56,29 @@ class G1_29_ArmController:
         self._gradual_start_time = None
         self._gradual_time = None
 
+        # initialize lowcmd publisher and lowstate subscriber
+        ChannelFactoryInitialize(0)
+        self.lowcmd_publisher = ChannelPublisher(kTopicLowCommand, LowCmd_)
+        self.lowcmd_publisher.Init()
+        self.lowstate_subscriber = ChannelSubscriber(kTopicLowState, LowState_)
+        self.lowstate_subscriber.Init()
+        self.lowstate_buffer = DataBuffer()
+
+        # initialize subscribe thread
         self.subscribe_thread = threading.Thread(target=self._subscribe_motor_state)
         self.subscribe_thread.daemon = True
         self.subscribe_thread.start()
 
         while not self.lowstate_buffer.GetData():
             time.sleep(0.01)
-            print("Waiting to subscribe dds...")
-        
+            print("[G1_29_ArmController] Waiting to subscribe dds...")
+
+        # initialize hg's lowcmd msg
+        self.crc = CRC()
+        self.msg = unitree_hg_msg_dds__LowCmd_()
+        self.msg.mode_pr = 0
+        self.msg.mode_machine = self.get_mode_machine()
+
         self.all_motor_q = self.get_current_motor_q()
         print(f"Current all body motor state q:\n{self.all_motor_q} \n")
         print(f"Current two arms motor state q:\n{self.get_current_dual_arm_q()}\n")
@@ -96,11 +100,9 @@ class G1_29_ArmController:
                     self.msg.motor_cmd[id].kp = self.kp_high
                     self.msg.motor_cmd[id].kd = self.kd_high
             self.msg.motor_cmd[id].q  = self.all_motor_q[id]
-        self.pre_communication()
-        self.lowcmd_publisher.msg = self.msg
-        self.lowcmd_publisher.write()
         print("Lock OK!\n")
 
+        # initialize publish thread
         self.publish_thread = threading.Thread(target=self._ctrl_motor_state)
         self.ctrl_lock = threading.Lock()
         self.publish_thread.daemon = True
@@ -108,61 +110,16 @@ class G1_29_ArmController:
 
         print("Initialize G1_29_ArmController OK!\n")
 
-    def __Trans(self, packData):
-        calcData = []
-        calcLen = ((len(packData)>>2)-1)
-
-        for i in range(calcLen):
-            d = ((packData[i*4+3] << 24) | (packData[i*4+2] << 16) | (packData[i*4+1] << 8) | (packData[i*4]))
-            calcData.append(d)
-
-        return calcData
-    
-    def __Crc32(self, data):
-        bit = 0
-        crc = 0xFFFFFFFF
-        polynomial = 0x04c11db7
-
-        for i in range(len(data)):
-            bit = 1 << 31
-            current = data[i]
-
-            for b in range(32):
-                if crc & 0x80000000:
-                    crc = (crc << 1) & 0xFFFFFFFF
-                    crc ^= polynomial
-                else:
-                    crc = (crc << 1) & 0xFFFFFFFF
-
-                if current & bit:
-                    crc ^= polynomial
-
-                bit >>= 1
-        
-        return crc
-    
-    def __pack_crc(self):
-        origData = []
-        origData.append(self.msg.mode_pr)
-        origData.append(self.msg.mode_machine)
-
-        for i in range(35):
-            origData.append(self.msg.motor_cmd[i].mode)
-            origData.append(self.msg.motor_cmd[i].q)
-            origData.append(self.msg.motor_cmd[i].dq)
-            origData.append(self.msg.motor_cmd[i].tau)
-            origData.append(self.msg.motor_cmd[i].kp)
-            origData.append(self.msg.motor_cmd[i].kd)
-            origData.append(self.msg.motor_cmd[i].reserve)
-
-        origData.extend(self.msg.reserve)
-        origData.append(self.msg.crc)
-        calcdata = struct.pack(self.__packFmtHGLowCmd, *origData)
-        calcdata =  self.__Trans(calcdata)
-        self.msg.crc = self.__Crc32(calcdata)
-
-    def pre_communication(self):
-        self.__pack_crc()
+    def _subscribe_motor_state(self):
+        while True:
+            msg = self.lowstate_subscriber.Read()
+            if msg is not None:
+                lowstate = G1_29_LowState()
+                for id in range(G1_29_Num_Motors):
+                    lowstate.motor_state[id].q  = msg.motor_state[id].q
+                    lowstate.motor_state[id].dq = msg.motor_state[id].dq
+                self.lowstate_buffer.SetData(lowstate)
+            time.sleep(0.002)
 
     def clip_arm_q_target(self, target_q, velocity_limit):
         current_q = self.get_current_dual_arm_q()
@@ -186,9 +143,8 @@ class G1_29_ArmController:
                 self.msg.motor_cmd[id].dq = 0
                 self.msg.motor_cmd[id].tau = arm_tauff_target[idx]      
 
-            self.pre_communication()
-            self.lowcmd_publisher.msg = self.msg
-            self.lowcmd_publisher.write()
+            self.msg.crc = self.crc.Crc(self.msg)
+            self.lowcmd_publisher.Write(self.msg)
 
             if self._speed_gradual_max is True:
                 t_elapsed = start_time - self._gradual_start_time
@@ -206,7 +162,11 @@ class G1_29_ArmController:
         with self.ctrl_lock:
             self.q_target = q_target
             self.tauff_target = tauff_target
-            
+
+    def get_mode_machine(self):
+        '''Return current dds mode machine.'''
+        return self.lowstate_subscriber.Read().mode_machine
+    
     def get_current_motor_q(self):
         '''Return current state q of all body motors.'''
         return np.array([self.lowstate_buffer.GetData().motor_state[id].q for id in G1_29_JointIndex])
@@ -218,16 +178,6 @@ class G1_29_ArmController:
     def get_current_dual_arm_dq(self):
         '''Return current state dq of the left and right arm motors.'''
         return np.array([self.lowstate_buffer.GetData().motor_state[id].dq for id in G1_29_JointArmIndex])
-
-    def _subscribe_motor_state(self):
-        while True:
-            if self.lowstate_subscriber.msg:
-                lowstate = G1_29_LowState()
-                for id in range(G1_29_Num_Motors):
-                    lowstate.motor_state[id].q  = self.lowstate_subscriber.msg.motor_state[id].q
-                    lowstate.motor_state[id].dq = self.lowstate_subscriber.msg.motor_state[id].dq
-                self.lowstate_buffer.SetData(lowstate)
-            time.sleep(0.002)
 
     def speed_gradual_max(self, t = 5.0):
         '''Parameter t is the total time required for arms velocity to gradually increase to its maximum value, in seconds. The default is 5.0.'''
