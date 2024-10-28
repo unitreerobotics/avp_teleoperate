@@ -57,29 +57,38 @@ We tested our code on Ubuntu 20.04 and Ubuntu 22.04, other operating systems may
 
 For more information, you can refer to [Official Documentation ](https://support.unitree.com/home/zh/Teleoperation) and [OpenTeleVision](https://github.com/OpenTeleVision/TeleVision).
 
-
-
 ## 1.1 🦾  inverse kinematics 
 
 ```bash
-conda create -n tv python=3.8
-conda activate tv
+unitree@Host:~$ conda create -n tv python=3.8
+unitree@Host:~$ conda activate tv
 # If you use `pip install`, Make sure pinocchio version is 3.1.0
-conda install pinocchio -c conda-forge
-pip install meshcat
-pip install casadi
+(tv) unitree@Host:~$ conda install pinocchio -c conda-forge
+(tv) unitree@Host:~$ pip install meshcat
+(tv) unitree@Host:~$ pip install casadi
 ```
 
-## 1.2 🕹️ unitree_dds_wrapper
+> p.s. All identifiers in front of the command are meant for prompting: **Which device and directory the command should be executed on**.
+>
+In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '`
+>
+> Taking the command `(tv) unitree@Host:~$ pip install meshcat` as an example:
+>
+> - `(tv)` Indicates the shell is in the conda environment named `tv`.
+>- `unitree@Host:~` Shows the user `\u` `unitree` is logged into the device `\h` `Host`, with the current working directory `\w` as `$HOME`.
+> - `$` shows the current shell is Bash (for non-root users).
+> - `pip install meshcat` is the command `unitree` wants to execute on `Host`.
+> 
+> You can refer to [Harley Hahn's Guide to Unix and Linux](https://www.harley.com/unix-book/book/chapters/04.html#H)  and the [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) to learn more.
+
+## 1.2 🕹️ unitree_sdk2_python
 
 ```bash
-# Install the Python version of the unitree_dds_wrapper.
-git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
-cd unitree_dds_wrapper/python
-pip install -e .
+# Install unitree_sdk2_python.
+(tv) unitree@Host:~$ git clone https://github.com/unitreerobotics/unitree_sdk2_python.git
+(tv) unitree@Host:~$ cd unitree_sdk2_python
+(tv) unitree@Host:~$ pip install -e .
 ```
-
->  p.s. This is a temporary version, and it will be replaced with [unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python) in the future.
 
 
 
@@ -88,11 +97,10 @@ pip install -e .
 ## 2.1 📥 basic
 
 ```bash
-cd ~
-git clone https://github.com/unitreerobotics/avp_teleoperate.git 
-cd ~/avp_teleoperate
-pip install -r requirements.txt
-cd act/detr && pip install -e .
+(tv) unitree@Host:~$ cd ~
+(tv) unitree@Host:~$ git clone https://github.com/unitreerobotics/avp_teleoperate.git 
+(tv) unitree@Host:~$ cd ~/avp_teleoperate
+(tv) unitree@Host:~$ pip install -r requirements.txt
 ```
 
 ## 2.2 🔌 Local streaming
@@ -103,35 +111,35 @@ cd act/detr && pip install -e .
 2. check **Host machine** local ip address:
 
 ```bash
-ifconfig | grep inet
+(tv) unitree@Host:~/avp_teleoperate$ ifconfig | grep inet
 ```
 
 Suppose the local ip address of the **Host machine** is `192.168.123.2`
 
-> p.s. you can use `ifconfig` command to check your **Host machine** ip address.
+> p.s. You can use `ifconfig` command to check your **Host machine** ip address.
 
 3. create certificate:
 
 ```bash
-mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
+(tv) unitree@Host:~/avp_teleoperate$ mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
 ```
 
 place the generated `cert.pem` and `key.pem` files in `teleop`
 
 ```bash
-cp cert.pem key.pem ~/avp_teleoperate/teleop/
+(tv) unitree@Host:~/avp_teleoperate$ cp cert.pem key.pem ~/avp_teleoperate/teleop/
 ```
 
 4. open firewall on server:
 
 ```bash
-sudo ufw allow 8012
+(tv) unitree@Host:~/avp_teleoperate$ sudo ufw allow 8012
 ```
 
 5. install ca-certificates on Apple Vision Pro:
 
-```
-mkcert -CAROOT
+```bash
+(tv) unitree@Host:~/avp_teleoperate$ mkcert -CAROOT
 ```
 
 Copy the `rootCA.pem` via AirDrop to Apple Vision Pro and install it.
@@ -149,14 +157,14 @@ This step is to verify that the environment is installed correctly.
     Extracting to the current directory, go to the `IsaacGym_Preview_4_Package/isaacgym/python` directory and execute the command:
 
     ```bash
-    pip install -e .
+    (tv) unitree@Host:~/IsaacGym_Preview_4_Package/isaacgym/python$ pip install -e .
     ```
 
 2. After setup up streaming with local following the above instructions, you can try teleoperating two robot hands in Issac Gym:
 
     ```bash
-    cd teleop
-    python teleop_test_gym.py
+    (tv) unitree@Host:~/avp_teleoperate$ cd teleop
+    (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_test_gym.py
     ```
 
 3. Wear your Apple Vision Pro device.
@@ -188,34 +196,36 @@ Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to
 # p.s.2 The image transfer program is currently configured for binocular rgb cameras.
 
 # Now located in Unitree Robot PC2 terminal
-python image_server.py
+unitree@PC2:~/image_server$ python image_server.py
 # You can see the terminal output as follows:
 # Image server has started, waiting for client connections...
-# Image Resolution: width is x, height is x
+# Image Resolution: width is 640, height is 480
 ```
 
 After image service is started, you can use `image_client.py` **in the Host** terminal to test whether the communication is successful:
 
 ```bash
-python image_client.py
+(tv) unitree@Host:~/avp_teleoperate/teleop/image_server$ python image_client.py
 ```
 
 ## 3.2 ✋ Inspire hands Server (optional)
+
+> Note: If the selected robot configuration does not use the Inspire dexterous hand, please ignore this section.
 
 You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program. Copy it to **PC2** of  Unitree robots. 
 
 On Unitree robot's **PC2**, execute command:
 
 ```bash
-sudo apt install libboost-all-dev libspdlog-dev
+unitree@PC2:~$ sudo apt install libboost-all-dev libspdlog-dev
 # Build project
-cd h1_inspire_service & mkdir build & cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make
+unitree@PC2:~$ cd h1_inspire_service & mkdir build & cd build
+unitree@PC2:~/h1_inspire_service/build$ cmake .. -DCMAKE_BUILD_TYPE=Release
+unitree@PC2:~/h1_inspire_service/build$ make
 # Terminal 1. Run h1 inspire hand service
-sudo ./inspire_hand -s /dev/ttyUSB0
+unitree@PC2:~/h1_inspire_service/build$ sudo ./inspire_hand -s /dev/ttyUSB0
 # Terminal 2. Run example
-./h1_hand_example
+unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 ```
 
 If two hands open and close continuously, it indicates success. Once successful, close the `./h1_hand_example` program in Terminal 2.
@@ -227,13 +237,16 @@ If two hands open and close continuously, it indicates success. Once successful,
 > 1. Everyone must keep a safe distance from the robot to prevent any potential danger!
 >
 > 2. Please make sure to read the [Official Documentation](https://support.unitree.com/home/zh/Teleoperation) at least once before running this program.
+>
+> 3. Always make sure that the robot has entered [debug mode (L2+R2)](https://support.unitree.com/home/zh/H1_developer/Remote_control) to stop the motion control program, this will avoid potential command conflict problems.
+>
 
 It's best to have two operators to run this program, referred to as **Operator A** and **Operator B**.
 
 Now, **Operator B** execute the following command on **Host machine** :
 
 ```bash
-python teleop_hand_and_arm.py
+(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
 ```
 
 And then, **Operator A**

@@ -58,24 +58,38 @@
 ## 1.1 🦾 逆运动学
 
 ```bash
-conda create -n tv python=3.8
-conda activate tv
+unitree@Host:~$ conda create -n tv python=3.8
+unitree@Host:~$ conda activate tv
 # 如果您使用 `pip install`，请确保 pinocchio 版本为 3.1.0
-conda install pinocchio -c conda-forge
-pip install meshcat
-pip install casadi
+(tv) unitree@Host:~$ conda install pinocchio -c conda-forge
+(tv) unitree@Host:~$ pip install meshcat
+(tv) unitree@Host:~$ pip install casadi
 ```
 
-## 1.2 🕹️ unitree_dds_wrapper
+> 提醒：命令前面的所有标识符是为了提示：该命令应该在哪个设备和目录下执行。
+>
+> p.s. 在 Ubuntu 系统 `~/.bashrc` 文件中，默认配置: `PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '`
+
+> - 以`(tv) unitree@Host:~$ pip install meshcat` 命令为例：
+>
+>- `(tv)` 表示 shell 此时位于 conda 创建的 tv 环境中；
+> 
+>- `unitree@Host:~` 表示用户标识 unitree 在设备 Host 上登录，当前的工作目录为 `$HOME`；
+> 
+>- $ 表示当前 shell 为 Bash；
+> 
+>- pip install meshcat 是用户标识 unitree 要在 设备 Host 上执行的命令。
+> 
+>您可以参考 [Harley Hahn's Guide to Unix and Linux](https://www.harley.com/unix-book/book/chapters/04.html#H) 和 [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) 来深入了解这些知识。
+
+## 1.2 🕹️ unitree_sdk2_python
 
 ```bash
-# 安装 unitree_dds_wrapper 的 Python 版本
-git clone https://github.com/unitreerobotics/unitree_dds_wrapper.git
-cd unitree_dds_wrapper/python
-pip install -e .
+# 安装 unitree_sdk2_python 库
+(tv) unitree@Host:~$ git clone https://github.com/unitreerobotics/unitree_sdk2_python.git
+(tv) unitree@Host:~$ cd unitree_sdk2_python
+(tv) unitree@Host:~$ pip install -e .
 ```
-
-> 注意：这是一个临时版本，未来将被 [unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python) 取代。
 
 
 
@@ -84,11 +98,10 @@ pip install -e .
 ## 2.1 📥 基础
 
 ```bash
-cd ~
-git clone https://github.com/unitreerobotics/avp_teleoperate.git 
-cd ~/avp_teleoperate
-pip install -r requirements.txt
-cd act/detr && pip install -e .
+(tv) unitree@Host:~$ cd ~
+(tv) unitree@Host:~$ git clone https://github.com/unitreerobotics/avp_teleoperate.git 
+(tv) unitree@Host:~$ cd ~/avp_teleoperate
+(tv) unitree@Host:~$ pip install -r requirements.txt
 ```
 
 ## 2.2 🔌 本地流媒体
@@ -99,35 +112,35 @@ cd act/detr && pip install -e .
 2. 检查**主机**本地 IP 地址：
 
 ```bash
-ifconfig | grep inet
+(tv) unitree@Host:~/avp_teleoperate$ ifconfig | grep inet
 ```
 
 假设 **主机** 的本地 IP 地址为 `192.168.123.2`
 
-> 注意：您可以使用 `ifconfig` 命令检查您的 **主机** IP 地址。
+> 提醒：您可以使用 `ifconfig` 命令检查您的 **主机** IP 地址。
 
 3. 创建证书：
 
 ```bash
-mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
+(tv) unitree@Host:~/avp_teleoperate$ mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.123.2 localhost 127.0.0.1
 ```
 
 将生成的 `cert.pem` 和 `key.pem` 文件放在 `teleop` 目录中
 
 ```bash
-cp cert.pem key.pem ~/avp_teleoperate/teleop/
+(tv) unitree@Host:~/avp_teleoperate$ cp cert.pem key.pem ~/avp_teleoperate/teleop/
 ```
 
 4. 在服务器上打开防火墙：
 
 ```bash
-sudo ufw allow 8012
+(tv) unitree@Host:~/avp_teleoperate$ sudo ufw allow 8012
 ```
 
 5. 在 Apple Vision Pro 上安装 CA 证书：
 
 ```bash
-mkcert -CAROOT
+(tv) unitree@Host:~/avp_teleoperate$ mkcert -CAROOT
 ```
 
 通过 AirDrop 将 `rootCA.pem` 复制到 Apple Vision Pro 并安装它。
@@ -145,21 +158,21 @@ mkcert -CAROOT
    解压到当前目录，进入 `IsaacGym_Preview_4_Package/isaacgym/python` 目录，执行命令：
 
    ```bash
-   pip install -e .
+   (tv) unitree@Host:~/IsaacGym_Preview_4_Package/isaacgym/python$ pip install -e .
    ```
 
 2. 按照上述说明设置本地流媒体后，您可以尝试在 Isaac Gym 中远程操作两个机器人手：
 
    ```bash
-   cd teleop
-   python teleop_test_gym.py
+   (tv) unitree@Host:~/avp_teleoperate$ cd teleop
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_test_gym.py
    ```
 
 3. 戴上您的 Apple Vision Pro 设备。
 
 4. 在 Apple Vision Pro 上打开 Safari，访问：https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
 
-   > 注意：此 IP 地址应与您的 **主机** IP 地址匹配。
+   > 提醒：此 IP 地址应与您的 **主机** IP 地址匹配。
 
 5. 点击 `Enter VR` 并选择 `Allow` 以启动 VR 会话。
 
@@ -183,51 +196,54 @@ mkcert -CAROOT
 # 提醒2：目前该图像传输程序是为双目RGB相机配置的。
 
 # 现在位于宇树机器人 PC2 终端
-python image_server.py
+unitree@PC2:~/image_server$ python image_server.py
 # 您可以看到终端输出如下：
-# 图像服务器已启动，等待客户端连接...
-# 图像分辨率：宽度为 x，高度为 x
+# Image server has started, waiting for client connections...
+# Image Resolution: width is 640, height is 480
 ```
 
 在图像服务启动后，您可以在 **主机** 终端上使用 `image_client.py` 测试通信是否成功：
 
 ```bash
-python image_client.py
+(tv) unitree@Host:~/avp_teleoperate/teleop/image_server$ python image_client.py
 ```
 
 ## 3.2 ✋ Inspire 手部服务器（可选）
+
+> 注意：如果选择的机器人配置中没有使用 Inspire 灵巧手，那么请忽略本节内容。
 
 您可以参考 [灵巧手开发](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) 配置相关环境并编译控制程序。首先，使用 [此链接](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) 下载灵巧手控制接口程序，然后将其复制到宇树机器人的**PC2**。
 
 在宇树机器人的 **PC2** 上，执行命令：
 
 ```bash
-sudo apt install libboost-all-dev libspdlog-dev
+unitree@PC2:~$ sudo apt install libboost-all-dev libspdlog-dev
 # 构建项目
-cd h1_inspire_service && mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make
+unitree@PC2:~$ cd h1_inspire_service & mkdir build & cd build
+unitree@PC2:~/h1_inspire_service/build$ cmake .. -DCMAKE_BUILD_TYPE=Release
+unitree@PC2:~/h1_inspire_service/build$ make
 # 终端 1. 运行 h1 inspire 手部服务
-sudo ./inspire_hand -s /dev/ttyUSB0
+unitree@PC2:~/h1_inspire_service/build$ sudo ./inspire_hand -s /dev/ttyUSB0
 # 终端 2. 运行示例
-./h1_hand_example
+unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 ```
 
-如果两只手连续打开和关闭，则表示成功。一旦成功，关闭终端 2 中的 `./h1_hand_example` 程序。
+如果两只手连续打开和关闭，则表示成功。一旦成功，即可关闭终端 2 中的 `./h1_hand_example` 程序。
 
 ## 3.3 🚀 启动
 
 >  ![Warning](https://img.shields.io/badge/Warning-Important-red)
 >
-> 1. 所有人员必须与机器人保持安全距离，以防止任何潜在的危险！
-> 2. 在运行此程序之前，请确保至少阅读一次 [官方文档](https://support.unitree.com/home/zh/Teleoperation)。
+>  1. 所有人员必须与机器人保持安全距离，以防止任何潜在的危险！
+>  2. 在运行此程序之前，请确保至少阅读一次 [官方文档](https://support.unitree.com/home/zh/Teleoperation)。
+>  3. 请务必确保机器人已经进入[调试模式（L2+R2）](https://support.unitree.com/home/zh/H1_developer/Remote_control)，以停止运动控制程序发送指令，这样可以避免潜在的指令冲突问题。
 
 最好有两名操作员来运行此程序，称为 **操作员 A** 和 **操作员 B**。
 
 现在，**操作员 B** 在 **主机** 上执行以下命令：
 
 ```bash
-python teleop_hand_and_arm.py
+(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
 ```
 
 然后，**操作员 A**：
@@ -254,7 +270,7 @@ python teleop_hand_and_arm.py
 >
 > 为了避免损坏机器人，最好确保**操作员 A** 将机器人手臂摆放为自然下垂或其他恰当位置后，**操作员B **再按 **q** 退出。
 
-要退出程序，**操作员 B** 可以在“record image”窗口中按下 **q** 键。
+要退出程序，**操作员 B** 可以在 'record image' 窗口中按下 **q** 键。
 
 
 

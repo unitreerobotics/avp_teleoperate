@@ -87,6 +87,24 @@ if __name__ == '__main__':
                 # print(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
                 arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
 
+                resized_image = cv2.resize(img_array, (img_shape[1] // 2, img_shape[0] // 2))
+                cv2.imshow("record image", resized_image)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    running = False
+                elif key == ord('s') and args.record:
+                    press_key_s_count += 1
+                    if press_key_s_count % 2 == 1:
+                        print("==> Start recording...")
+                        recording = True
+                        recorder.create_episode()
+                        print("==> Create episode ok.")
+                    else:
+                        print("==> End recording...")
+                        recording = False
+                        recorder.save_episode()
+                        print("==> Save episode ok.")
+
                 # record data
                 if args.record:
                     with dual_hand_data_lock:
@@ -100,23 +118,6 @@ if __name__ == '__main__':
                     right_arm_state = current_lr_arm_q[-7:]
                     left_arm_action = sol_q[:7]
                     right_arm_action = sol_q[-7:]
-
-                    cv2.imshow("record image", current_image)
-                    key = cv2.waitKey(1) & 0xFF
-                    if key == ord('q'):
-                        running = False
-                    elif key == ord('s'):
-                        press_key_s_count += 1
-                        if press_key_s_count % 2 == 1:
-                            print("==> Start recording...")
-                            recording = True
-                            recorder.create_episode()
-                            print("==> Create episode ok.")
-                        else:
-                            print("==> End recording...")
-                            recording = False
-                            recorder.save_episode()
-                            print("==> Save episode ok.")
 
                     if recording:
                         colors = {}
@@ -181,12 +182,9 @@ if __name__ == '__main__':
                 # print(f"main process sleep: {sleep_time}")
 
     except KeyboardInterrupt:
-        img_shm.unlink()
-        img_shm.close()
         print("KeyboardInterrupt, exiting program...")
-        exit(0)
     finally:
-        img_shm.unlink()
         img_shm.close()
+        img_shm.unlink()
         print("Finally, exiting program...")
         exit(0)

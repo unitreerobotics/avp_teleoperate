@@ -12,3 +12,4 @@ __MACOSX/
 !video_cover.jpg
 *.svo
 *.png
+teleop/data/

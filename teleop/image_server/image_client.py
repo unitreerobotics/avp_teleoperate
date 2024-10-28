@@ -146,7 +146,8 @@ class ImageClient:
                     np.copyto(self._img_array, np.array(current_image))
                 
                 if self._image_show:
-                    cv2.imshow('Image Client Stream', current_image)
+                    resized_image = cv2.resize(current_image, (current_image.shape[1] // 2, current_image.shape[0] // 2))
+                    cv2.imshow('Image Client Stream', resized_image)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         self.running = False
 
