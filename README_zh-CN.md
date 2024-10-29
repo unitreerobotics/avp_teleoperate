@@ -48,6 +48,15 @@
 </table>
 
 
+以下是需要的设备和接线示意图：
+
+<p align="center">
+  <a href="https://oss-global-cdn.unitree.com/static/51911de26023417aa481ca30a2c6183e_4920x2600.png">
+    <img src="https://oss-global-cdn.unitree.com/static/51911de26023417aa481ca30a2c6183e_4920x2600.png" alt="Watch the Document" style="width: 65%;">
+  </a>
+</p>
+
+
 
 # 1. 📦 前置条件
 

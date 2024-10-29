@@ -47,7 +47,13 @@ Here are the robots that will be supported,
     <td style="text-align: center;"> ··· </td>
   </tr>
 </table>
+Here are the required devices and wiring diagram,
 
+<p align="center">
+  <a href="https://oss-global-cdn.unitree.com/static/e0ca680eda164e31bd0ff6f8fb50604c_5050x2590.png">
+    <img src="https://oss-global-cdn.unitree.com/static/e0ca680eda164e31bd0ff6f8fb50604c_5050x2590.png" alt="Watch the Document" style="width: 65%;">
+  </a>
+</p>
 
 
 
