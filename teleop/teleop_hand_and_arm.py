@@ -21,43 +21,56 @@ from teleop.utils.episode_writer import EpisodeWriter
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task_dir', type=str, default='data', help='path to save data')
-    parser.add_argument('--frequency', type=int, default=30.0, help='save data\'s frequency')
+    parser.add_argument('--task_dir', type = str, default = 'data', help = 'path to save data')
+    parser.add_argument('--frequency', type = int, default = 30.0, help = 'save data\'s frequency')
 
-    parser.add_argument('--record', action='store_true', help='Save data or not')
-    parser.add_argument('--no-record', dest='record', action='store_false', help='Do not save data')
-    parser.set_defaults(record=False)
+    parser.add_argument('--record', action = 'store_true', help = 'Save data or not')
+    parser.add_argument('--no-record', dest = 'record', action = 'store_false', help = 'Do not save data')
+    parser.set_defaults(record = True)
 
-    parser.add_argument('--binocular', action='store_true', help='Use binocular camera')
-    parser.add_argument('--monocular', dest='binocular', action='store_false', help='Use monocular camera')
-    parser.set_defaults(binocular=True)
+    parser.add_argument('--binocular', action = 'store_true', help = 'Use binocular camera')
+    parser.add_argument('--monocular', dest = 'binocular', action = 'store_false', help = 'Use monocular camera')
+    parser.set_defaults(binocular = True)
+
+    parser.add_argument('--wrist', action = 'store_true', help = 'Use wrist camera')
+    parser.add_argument('--no-wrist', dest = 'wrist', action = 'store_false', help = 'Not use wrist camera')
+    parser.set_defaults(wrist = False)
     args = parser.parse_args()
     print(f"args:{args}\n")
 
     # image
-    img_shape = (720, 2560, 3)
-    img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
-    img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
-    img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
-    image_receive_thread = threading.Thread(target=img_client.receive_process, daemon=True)
+    tv_img_shape = (480, 640 * 2, 3)
+    tv_img_shm = shared_memory.SharedMemory(create = True, size = np.prod(tv_img_shape) * np.uint8().itemsize)
+    tv_img_array = np.ndarray(tv_img_shape, dtype = np.uint8, buffer = tv_img_shm.buf)
+
+    if args.wrist:
+        wrist_img_shape = tv_img_shape
+        wrist_img_shm = shared_memory.SharedMemory(create = True, size = np.prod(wrist_img_shape) * np.uint8().itemsize)
+        wrist_img_array = np.ndarray(wrist_img_shape, dtype = np.uint8, buffer = wrist_img_shm.buf)
+        img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = tv_img_shm.name, 
+                                 wrist_img_shape = wrist_img_shape, wrist_img_shm_name = wrist_img_shm.name)
+    else:
+        img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = tv_img_shm.name)
+
+    image_receive_thread = threading.Thread(target = img_client.receive_process, daemon = True)
     image_receive_thread.daemon = True
     image_receive_thread.start()
 
     # television and arm
-    tv_wrapper = TeleVisionWrapper(args.binocular, img_shape, img_shm.name)
+    tv_wrapper = TeleVisionWrapper(args.binocular, tv_img_shape, tv_img_shm.name)
     arm_ctrl = G1_29_ArmController()
     arm_ik = G1_29_ArmIK()
 
     # hand
-    left_hand_array = Array('d', 75, lock=True)         # [input]
-    right_hand_array = Array('d', 75, lock=True)        # [input]
+    left_hand_array = Array('d', 75, lock = True)         # [input]
+    right_hand_array = Array('d', 75, lock = True)        # [input]
     dual_hand_data_lock = Lock()
-    dual_hand_state_array = Array('d', 14, lock=False)  # [output] current left, right hand state(14) data.
-    dual_hand_action_array = Array('d', 14, lock=False) # [output] current left, right hand action(14) data.
+    dual_hand_state_array = Array('d', 14, lock = False)  # [output] current left, right hand state(14) data.
+    dual_hand_action_array = Array('d', 14, lock = False) # [output] current left, right hand action(14) data.
     hand_ctrl = Dex3_1_Controller(left_hand_array, right_hand_array, dual_hand_data_lock, dual_hand_state_array, dual_hand_action_array)
     
     if args.record:
-        recorder = EpisodeWriter(task_dir=args.task_dir, frequency=args.frequency)
+        recorder = EpisodeWriter(task_dir = args.task_dir, frequency = args.frequency)
         
     try:
         user_input = input("Please enter the start signal (enter 'r' to start the subsequent program):\n")
@@ -87,8 +100,8 @@ if __name__ == '__main__':
                 # print(f"ik:\t{round(time_ik_end - time_ik_start, 6)}")
                 arm_ctrl.ctrl_dual_arm(sol_q, sol_tauff)
 
-                resized_image = cv2.resize(img_array, (img_shape[1] // 2, img_shape[0] // 2))
-                cv2.imshow("record image", resized_image)
+                tv_resized_image = cv2.resize(tv_img_array, (tv_img_shape[1] // 2, tv_img_shape[0] // 2))
+                cv2.imshow("record image", tv_resized_image)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
                     running = False
@@ -112,8 +125,9 @@ if __name__ == '__main__':
                         right_hand_state = dual_hand_state_array[-7:]
                         left_hand_action = dual_hand_action_array[:7]
                         right_hand_action = dual_hand_action_array[-7:]
-
-                    current_image = img_array.copy()
+                    current_tv_image = tv_img_array.copy()
+                    if args.wrist:
+                        current_wrist_image = wrist_img_array.copy()
                     left_arm_state  = current_lr_arm_q[:7]
                     right_arm_state = current_lr_arm_q[-7:]
                     left_arm_action = sol_q[:7]
@@ -123,10 +137,16 @@ if __name__ == '__main__':
                         colors = {}
                         depths = {}
                         if args.binocular:
-                            colors[f"color_{0}"] = current_image[:, :img_shape[1]//2]
-                            colors[f"color_{1}"] = current_image[:, img_shape[1]//2:]
+                            colors[f"color_{0}"] = current_tv_image[:, :tv_img_shape[1]//2]
+                            colors[f"color_{1}"] = current_tv_image[:, tv_img_shape[1]//2:]
+                            if args.wrist:
+                                colors[f"color_{2}"] = current_wrist_image[:, :wrist_img_shape[1]//2]
+                                colors[f"color_{3}"] = current_wrist_image[:, wrist_img_shape[1]//2:]
                         else:
-                            colors[f"color_{0}"] = current_image
+                            colors[f"color_{0}"] = current_tv_image
+                            if args.wrist:
+                                colors[f"color_{1}"] = current_wrist_image[:, :wrist_img_shape[1]//2]
+                                colors[f"color_{2}"] = current_wrist_image[:, wrist_img_shape[1]//2:]
                         states = {
                             "left_arm": {                                                                    
                                 "qpos":   left_arm_state.tolist(),    # numpy.array -> list
@@ -184,7 +204,10 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("KeyboardInterrupt, exiting program...")
     finally:
-        img_shm.close()
-        img_shm.unlink()
+        tv_img_shm.unlink()
+        tv_img_shm.close()
+        if args.wrist:
+            wrist_img_shm.unlink()
+            wrist_img_shm.close()
         print("Finally, exiting program...")
         exit(0)

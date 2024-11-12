@@ -9,10 +9,11 @@
 # 📺 Video Demo
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo">
+  <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo" target="_blank">
     <img src="https://img.youtube.com/vi/pNjr2f_XHoo/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
   </a>
 </p>
+
 
 
 
@@ -25,28 +26,36 @@ Here are the robots that will be supported,
   <tr>
     <th style="text-align: center;"> &#129302; Robot </th>
     <th style="text-align: center;"> &#9898; Status </th>
+    <th style="text-align: center;"> &#128221; Remarks </th>
   </tr>
   <tr>
     <td style="text-align: center;"> G1 (29DoF) + Dex3-1 </td>
     <td style="text-align: center;"> &#9989; Completed </td>
+    <td style="text-align: center;">  </td>
   </tr>
   <tr>
     <td style="text-align: center;"> G1 (23DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
+    <td style="text-align: center;">  </td>
   </tr>
   <tr>
     <td style="text-align: center;"> H1 (Arm 4DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
+    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">Refer to this branch's ik temporarily</a> </td>
   </tr>
   <tr>
     <td style="text-align: center;"> H1_2 (Arm 7DoF) + Inspire </td>
-    <td style="text-align: center;"> &#9201; In Progress </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/master" target="_blank">Refer to this branch temporarily</a> </td>
   </tr>
   <tr>
+    <td style="text-align: center;"> ··· </td>
     <td style="text-align: center;"> ··· </td>
     <td style="text-align: center;"> ··· </td>
   </tr>
 </table>
+
+
 Here are the required devices and wiring diagram,
 
 <p align="center">
@@ -85,7 +94,7 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 > - `$` shows the current shell is Bash (for non-root users).
 > - `pip install meshcat` is the command `unitree` wants to execute on `Host`.
 > 
-> You can refer to [Harley Hahn's Guide to Unix and Linux](https://www.harley.com/unix-book/book/chapters/04.html#H)  and the [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) to learn more.
+> You can refer to [Harley Hahn's Guide to Unix and Linux](https://www.harley.com/unix-book/book/chapters/04.html#H)  and  [Conda User Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) to learn more.
 
 ## 1.2 🕹️ unitree_sdk2_python
 
@@ -98,7 +107,7 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 
 
 
-# 2. 🛠️ TeleVision and Apple Vision Pro configuration
+# 2. ⚙️ TeleVision and Apple Vision Pro configuration
 
 ## 2.1 📥 basic
 
@@ -316,7 +325,87 @@ avp_teleoperate/
 
 
 
-# 5. 🙏 Acknowledgement
+# 5. 🛠️ Hardware
+
+## 5.1 📋 List
+
+|             Item             | Quantity |                             Link                             |                           Remarks                           |
+| :--------------------------: | :------: | :----------------------------------------------------------: | :---------------------------------------------------------: |
+|     **Unitree Robot G1**     |    1     |                  https://www.unitree.com/g1                  |               With development computing unit               |
+|     **Apple Vision Pro**     |    1     |           https://www.apple.com/apple-vision-pro/            |                                                             |
+|          **Router**          |    1     |                                                              |                                                             |
+|         **User PC**          |    1     |                                                              | Recommended graphics card performance at RTX 4080 and above |
+|    **Head Stereo Camera**    |    1     | [For reference only] http://e.tb.cn/h.TaZxgkpfWkNCakg?tk=KKz03Kyu04u |                          For head                           |
+|    **Head Camera Mount**     |    1     | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/head_stereo_camera_mount.STEP |          For mounting head stereo camera, FOV 130°          |
+|     Intel RealSense D405     |    2     |      https://www.intelrealsense.com/depth-camera-d405/       |                          For wrist                          |
+|       Wrist Ring Mount       |    2     | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP |                Used with wrist camera mount                 |
+|   Left Wrist Camera Mount    |    1     | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP |       For mounting left wrist RealSense D405  camera        |
+|   Right Wrist Camera Mount   |    1     | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP |       For mounting right wrist RealSense D405  camera       |
+|         M3 hex nuts          |    4     |         [For reference only] https://a.co/d/1opqtOr          |                     For Wrist fastener                      |
+|         M3x12 screws         |    4     |       [For reference only] https://amzn.asia/d/aU9NHSf       |                     For wrist fastener                      |
+|         M3x6 screws          |    4     |       [For reference only] https://amzn.asia/d/0nEz5dJ       |                     For wrist fastener                      |
+|       **M4x14 screws**       |    2     |       [For reference only] https://amzn.asia/d/cfta55x       |                      For head fastener                      |
+| **M2x4 self-tapping screws** |    4     |       [For reference only] https://amzn.asia/d/1msRa5B       |                      For head fastener                      |
+
+> Note: The bolded items are essential equipment for teleoperation tasks, while the other items are optional equipment for recording [datasets](https://huggingface.co/unitreerobotics).
+
+## 5.2 🔨 Installation diagram
+
+<table>
+    <tr>
+        <th style="text-align: center;">Item</th>
+        <th style="text-align: center;" colspan="2">Simulation</th>
+        <th style="text-align: center;" colspan="2">Real</th>
+    </tr>
+    <tr>
+        <td style="text-align: center;">Head</td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/head_camera_mount.png" alt="head" style="width: 100%;">
+                <figcaption>Head Mount</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/head_camera_mount_install.png" alt="head" style="width: 80%;">
+                <figcaption>Side View of Assembly</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;" colspan="2">
+            <figure>
+                <img src="./img/real_head.jpg" alt="head" style="width: 20%;">
+                <figcaption>Front View of Assembly</figcaption>
+            </figure>
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center;">Wrist</td>
+        <td style="text-align: center;" colspan="2">
+            <figure>
+                <img src="./img/wrist_and_ring_mount.png" alt="wrist" style="width: 100%;">
+                <figcaption>Wrist Ring and Camera Mount</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/real_left_hand.jpg" alt="wrist" style="width: 50%;">
+                <figcaption>Left Hand Assembly</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/real_right_hand.jpg" alt="wrist" style="width: 50%;">
+                <figcaption>Right Hand Assembly</figcaption>
+            </figure>
+        </td>
+    </tr>
+</table>
+
+> Note: The wrist ring mount should align with the seam of the robot's wrist, as shown by the red circle in the image.
+
+
+
+# 6. 🙏 Acknowledgement
 
 This code builds upon following open-source code-bases. Please visit the URLs to see the respective LICENSES:
 

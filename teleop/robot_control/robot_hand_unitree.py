@@ -223,10 +223,10 @@ if __name__ == "__main__":
     print(f"args:{args}\n")
 
     # image
-    img_shape = (720, 1280, 3)
+    img_shape = (480, 1280, 3)
     img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
     img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
-    img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
+    img_client = ImageClient(tv_img_shape = img_shape, tv_img_shm_name = img_shm.name)
     image_receive_thread = threading.Thread(target=img_client.receive_process, daemon=True)
     image_receive_thread.daemon = True
     image_receive_thread.start()
@@ -245,5 +245,9 @@ if __name__ == "__main__":
     user_input = input("Please enter the start signal (enter 's' to start the subsequent program):\n")
     if user_input.lower() == 's':
         while True:
-            print(f"{dual_hand_state_array[1]}")
-            time.sleep(0.1)
+            head_rmat, left_wrist, right_wrist, left_hand, right_hand = tv_wrapper.get_data()
+            # send hand skeleton data to hand_ctrl.control_process
+            left_hand_array[:] = left_hand.flatten()
+            right_hand_array[:] = right_hand.flatten()
+            print(f"Dual hand state array: {list(dual_hand_state_array)}")
+            time.sleep(0.01)

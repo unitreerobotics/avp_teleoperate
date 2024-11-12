@@ -7,11 +7,16 @@ from collections import deque
 from multiprocessing import shared_memory
 
 class ImageClient:
-    def __init__(self, img_shape = None, img_shm_name = None, image_show = False, server_address = "192.168.123.164", port = 5555, Unit_Test = False):
+    def __init__(self, tv_img_shape = None, tv_img_shm_name = None, wrist_img_shape = None, wrist_img_shm_name = None, 
+                       image_show = False, server_address = "192.168.123.164", port = 5555, Unit_Test = False):
         """
-        img_shape: User's expected camera resolution shape (H, W, C). It should match the output of the image service terminal.
+        tv_img_shape: User's expected head camera resolution shape (H, W, C). It should match the output of the image service terminal.
 
-        img_shm_name: Shared memory is used to easily transfer images across processes to the Vuer.
+        tv_img_shm_name: Shared memory is used to easily transfer images across processes to the Vuer.
+
+        wrist_img_shape: User's expected wrist camera resolution shape (H, W, C). It should maintain the same shape as tv_img_shape.
+
+        wrist_img_shm_name: Shared memory is used to easily transfer images.
         
         image_show: Whether to display received images in real time.
 
@@ -27,11 +32,20 @@ class ImageClient:
         self._server_address = server_address
         self._port = port
 
-        self.enable_shm = False
-        if img_shape is not None and img_shm_name is not None:
-            self._image_shm = shared_memory.SharedMemory(name=img_shm_name)
-            self._img_array = np.ndarray(img_shape, dtype = np.uint8, buffer = self._image_shm.buf)
-            self.enable_shm = True
+        self.tv_img_shape = tv_img_shape
+        self.wrist_img_shape = wrist_img_shape
+
+        self.tv_enable_shm = False
+        if self.tv_img_shape is not None and tv_img_shm_name is not None:
+            self.tv_image_shm = shared_memory.SharedMemory(name=tv_img_shm_name)
+            self.tv_img_array = np.ndarray(tv_img_shape, dtype = np.uint8, buffer = self.tv_image_shm.buf)
+            self.tv_enable_shm = True
+        
+        self.wrist_enable_shm = False
+        if self.wrist_img_shape is not None and wrist_img_shm_name is not None:
+            self.wrist_image_shm = shared_memory.SharedMemory(name=wrist_img_shm_name)
+            self.wrist_img_array = np.ndarray(wrist_img_shape, dtype = np.uint8, buffer = self.wrist_image_shm.buf)
+            self.wrist_enable_shm = True
 
         # Performance evaluation parameters
         self._enable_performance_eval = Unit_Test
@@ -142,11 +156,15 @@ class ImageClient:
                     print("[Image Client] Failed to decode image.")
                     continue
 
-                if self.enable_shm:
-                    np.copyto(self._img_array, np.array(current_image))
+                if self.tv_enable_shm:
+                    np.copyto(self.tv_img_array, np.array(current_image[:, :self.tv_img_shape[1]]))
+                
+                if self.wrist_enable_shm:
+                    np.copyto(self.wrist_img_array, np.array(current_image[:, self.wrist_img_shape[1]:]))
                 
                 if self._image_show:
-                    resized_image = cv2.resize(current_image, (current_image.shape[1] // 2, current_image.shape[0] // 2))
+                    height, width = current_image.shape[:2]
+                    resized_image = cv2.resize(current_image, (width // 2, height // 2))
                     cv2.imshow('Image Client Stream', resized_image)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         self.running = False
@@ -164,10 +182,10 @@ class ImageClient:
 
 if __name__ == "__main__":
     # example1
-    # img_shape = (720, 1280, 3)
-    # img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
-    # img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
-    # img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
+    # tv_img_shape = (480, 1280, 3)
+    # img_shm = shared_memory.SharedMemory(create=True, size=np.prod(tv_img_shape) * np.uint8().itemsize)
+    # img_array = np.ndarray(tv_img_shape, dtype=np.uint8, buffer=img_shm.buf)
+    # img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = img_shm.name)
     # img_client.receive_process()
 
     # example2

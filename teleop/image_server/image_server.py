@@ -3,9 +3,64 @@ import zmq
 import time
 import struct
 from collections import deque
+import numpy as np
+import pyrealsense2 as rs
+
+
+class RealSenseCamera(object):
+  def __init__(self, img_shape, fps, serial_number = None, enable_depth = False) -> None:
+    self.img_shape = img_shape
+    self.fps = fps
+    self.serial_number = serial_number
+    self.enable_depth = enable_depth
+
+    align_to = rs.stream.color
+    self.align = rs.align(align_to)
+    self.init_realsense()
+
+  def init_realsense(self):
+
+    self.pipeline = rs.pipeline()
+    config = rs.config()
+    if self.serial_number is not None:
+      config.enable_device(self.serial_number)
+
+    config.enable_stream(rs.stream.color, self.img_shape[1] // 2, self.img_shape[0], rs.format.bgr8, self.fps)
+
+    if self.enable_depth:
+      config.enable_stream(rs.stream.depth, self.img_shape[1] // 2, self.img_shape[0], rs.format.z16, self.fps)
+
+    profile = self.pipeline.start(config)
+    self._device = profile.get_device()
+    if self._device is None:
+        print('pipe_profile.get_device() is None .')
+    if self.enable_depth:
+      assert self._device is not None
+      depth_sensor = self._device.first_depth_sensor()
+      self.g_depth_scale = depth_sensor.get_depth_scale() 
+
+    self.intrinsics = profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
+
+
+  def get_frame(self):
+    frames = self.pipeline.wait_for_frames()
+    aligned_frames = self.align.process(frames)
+    color_frame = aligned_frames.get_color_frame()
+
+    if self.enable_depth:
+      depth_frame = aligned_frames.get_depth_frame()
+
+    if not color_frame:
+      return None, None
+    
+    color_image = np.asanyarray(color_frame.get_data())
+    # color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
+    depth_image = np.asanyarray(depth_frame.get_data()) if self.enable_depth else None
+    return color_image, depth_image
+
 
 class ImageServer:
-    def __init__(self, img_shape = (480, 640 * 2, 3), fps = 30, port = 5555, Unit_Test = False):
+    def __init__(self, img_shape = (480, 640 * 2, 3), fps = 30, enable_wrist = False, port = 5555, Unit_Test = False):
         """
         img_shape: User's expected camera resolution shape (H, W, C). 
         
@@ -23,6 +78,7 @@ class ImageServer:
         """
         self.img_shape = img_shape
         self.fps = fps
+        self.enable_wrist = enable_wrist
         self.port = port
         self.enable_performance_eval = Unit_Test
 
@@ -32,6 +88,11 @@ class ImageServer:
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.img_shape[1])
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.img_shape[0])
         self.cap.set(cv2.CAP_PROP_FPS, self.fps)
+
+        if self.enable_wrist:
+            # initiate realsense camera
+            self.left_cam  = RealSenseCamera(img_shape = self.img_shape, fps = self.fps, serial_number = "218622271789")  # left wrist camera
+            self.right_cam = RealSenseCamera(img_shape = self.img_shape, fps = self.fps, serial_number = "218622278527")  # right wrist camera
 
         # set ZeroMQ context and socket
         self.context = zmq.Context()
@@ -74,12 +135,18 @@ class ImageServer:
     def send_process(self):
         try:
             while True:
-                ret, frame = self.cap.read()
+                ret, head_color = self.cap.read()
                 if not ret:
                     print("[Image Server] Frame read is error.")
                     break
 
-                ret, buffer = cv2.imencode('.jpg', frame)
+                if self.enable_wrist:
+                    left_wrist_color, left_wrist_depth   = self.left_cam.get_frame()
+                    right_wrist_color, right_wrist_depth = self.right_cam.get_frame()
+                    # Concatenate images along the width
+                    head_color = cv2.hconcat([head_color, left_wrist_color, right_wrist_color])
+
+                ret, buffer = cv2.imencode('.jpg', head_color)
                 if not ret:
                     print("[Image Server] Frame imencode is failed.")
                     continue
@@ -108,5 +175,5 @@ class ImageServer:
 
 if __name__ == "__main__":
     # server = ImageServer(img_shape = (720, 640 * 2, 3), Unit_Test = True)   # test
-    server = ImageServer(img_shape = (720, 1280 * 2, 3), Unit_Test = False)  # deployment
+    server = ImageServer(img_shape = (640, 480 * 2, 3), enable_wrist = True, Unit_Test = False)  # deployment
     server.send_process()

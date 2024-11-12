@@ -9,10 +9,11 @@
 # 📺 视频演示
 
 <p align="center">
-  <a href="https://www.bilibili.com/video/BV1SW421X7kA">
+  <a href="https://www.bilibili.com/video/BV1SW421X7kA" target="_blank">
     <img src="./img/video_cover.jpg" alt="Watch the video" style="width: 35%;">
   </a>
 </p>
+
 
 # 0. 📖 介绍
 
@@ -24,26 +25,32 @@
   <tr>
     <th style="text-align: center;"> &#129302; 机器人 </th>
     <th style="text-align: center;"> &#9898; 状态 </th>
+    <th style="text-align: center;"> &#128221; 备注 </th>
   </tr>
   <tr>
     <td style="text-align: center;"> G1 (29自由度) + Dex3-1 </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
+    <th style="text-align: center;"> </th>
   </tr>
   <tr>
     <td style="text-align: center;"> G1 (23自由度) </td>
     <td style="text-align: center;"> &#9201; 进行中 </td>
+    <th style="text-align: center;">  </th>
   </tr>
   <tr>
     <td style="text-align: center;"> H1 (手臂4自由度) </td>
     <td style="text-align: center;"> &#9201; 进行中 </td>
+    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">可参考该临时分支下ik解算</a> </th>
   </tr>
   <tr>
     <td style="text-align: center;"> H1_2 (手臂7自由度) + Inspire </td>
-    <td style="text-align: center;"> &#9201; 进行中 </td>
+    <td style="text-align: center;"> &#9989; 完成 </td>
+    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/master" target="_blank">可参考该临时分支</a>  </th>
   </tr>
   <tr>
     <td style="text-align: center;"> ··· </td>
     <td style="text-align: center;"> ··· </td>
+    <th style="text-align: center;"> ··· </th>
   </tr>
 </table>
 
@@ -78,7 +85,6 @@ unitree@Host:~$ conda activate tv
 > 提醒：命令前面的所有标识符是为了提示：该命令应该在哪个设备和目录下执行。
 >
 > p.s. 在 Ubuntu 系统 `~/.bashrc` 文件中，默认配置: `PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '`
-
 > - 以`(tv) unitree@Host:~$ pip install meshcat` 命令为例：
 >
 >- `(tv)` 表示 shell 此时位于 conda 创建的 tv 环境中；
@@ -102,7 +108,7 @@ unitree@Host:~$ conda activate tv
 
 
 
-# 2. 🛠️ TeleVision 和 Apple Vision Pro 配置
+# 2. ⚙️ TeleVision 和 Apple Vision Pro 配置
 
 ## 2.1 📥 基础
 
@@ -316,7 +322,87 @@ avp_teleoperate/
 
 
 
-# 5. 🙏 鸣谢
+# 5. 🛠️ 硬件
+
+## 5.1 📋 清单
+
+|           项目            | 数量 |                             链接                             |              备注              |
+| :-----------------------: | :--: | :----------------------------------------------------------: | :----------------------------: |
+| **宇树通用人形机器人 G1** |  1   |                https://www.unitree.com/cn/g1                 |     需选配开发计算单元版本     |
+|   **Apple Vision Pro**    |  1   |          https://www.apple.com.cn/apple-vision-pro/          |                                |
+|        **路由器**         |  1   |                                                              |                                |
+|       **用户电脑**        |  1   |                                                              |  推荐显卡性能在RTX 4080 以上   |
+|     **头部双目相机**      |  1   |  [仅供参考] http://e.tb.cn/h.TaZxgkpfWkNCakg?tk=KKz03Kyu04u  | 用于机器人头部视野，视场角130° |
+|     **头部相机支架**      |  1   | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/head_stereo_camera_mount.STEP |        用于装配头部相机        |
+| 英特尔 RealSense D405相机 |  2   |      https://www.intelrealsense.com/depth-camera-d405/       |      用于腕部灵巧操作视野      |
+|     腕部相机环形支架      |  2   | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/wrist_ring_mount.STEP |     与腕部相机支架搭配使用     |
+|       左腕相机支架        |  1   | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/left_wrist_D405_camera_mount.STEP |      用于装配左腕D405相机      |
+|       右腕相机支架        |  1   | https://github.com/unitreerobotics/avp_teleoperate/blob/g1/hardware/right_wrist_D405_camera_mount.STEP |      用于装配右腕D405相机      |
+|       M3-1 六角螺母       |  4   |              [仅供参考] https://a.co/d/gQaLtHD               |         用于腕部紧固件         |
+|        M3x12 螺钉         |  4   |            [仅供参考] https://amzn.asia/d/aU9NHSf            |         用于腕部紧固件         |
+|         M3x6 螺钉         |  4   |            [仅供参考] https://amzn.asia/d/0nEz5dJ            |         用于腕部紧固件         |
+|      **M4x14 螺钉**       |  2   |            [仅供参考] https://amzn.asia/d/cfta55x            |         用于头部紧固件         |
+|     **M2x4 自攻螺钉**     |  4   |            [仅供参考] https://amzn.asia/d/1msRa5B            |         用于头部紧固件         |
+
+> 注意：加粗项目是进行遥操作任务时的必需设备，其余项目是录制[数据集](https://huggingface.co/unitreerobotics)时的可选设备。
+
+## 5.2 🔨 安装示意图
+
+<table>
+    <tr>
+        <th style="text-align: center;">项目</th>
+        <th style="text-align: center;" colspan="2">仿真</th>
+        <th style="text-align: center;" colspan="2">实物</th>
+    </tr>
+    <tr>
+        <td style="text-align: center;">头部</td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/head_camera_mount.png" alt="head" style="width: 100%;">
+                <figcaption>头部支架</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/head_camera_mount_install.png" alt="head" style="width: 80%;">
+                <figcaption>装配侧视</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;" colspan="2">
+            <figure>
+                <img src="./img/real_head.jpg" alt="head" style="width: 20%;">
+                <figcaption>装配正视</figcaption>
+            </figure>
+        </td>
+    </tr>
+    <tr>
+        <td style="text-align: center;">腕部</td>
+        <td style="text-align: center;" colspan="2">
+            <figure>
+                <img src="./img/wrist_and_ring_mount.png" alt="wrist" style="width: 100%;">
+                <figcaption>腕圈及相机支架</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/real_left_hand.jpg" alt="wrist" style="width: 50%;">
+                <figcaption>装配左手</figcaption>
+            </figure>
+        </td>
+        <td style="text-align: center;">
+            <figure>
+                <img src="./img/real_right_hand.jpg" alt="wrist" style="width: 50%;">
+                <figcaption>装配右手</figcaption>
+            </figure>
+        </td>
+    </tr>
+</table>
+
+> 注意：如图中红圈所示，腕圈支架与机器人手腕接缝对齐。
+
+
+
+# 6. 🙏 鸣谢
 
 该代码基于以下开源代码库构建。请访问以下链接查看各自的许可证：
 
