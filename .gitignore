@@ -9,7 +9,13 @@ __MACOSX/
 *.pem
 *.webm
 *.jpg
-!video_cover.jpg
 *.svo
 *.png
+!video_cover.jpg
+!head_camera_mount_install.png
+!head_camera_mount.png
+!real_head.jpg
+!real_left_hand.jpg
+!real_right_hand.jpg
+!wrist_and_ring_mount.png
 teleop/data/
