@@ -347,50 +347,50 @@ avp_teleoperate/
 
 <table>
     <tr>
-        <th style="text-align: center;">Item</th>
-        <th style="text-align: center;" colspan="2">Simulation</th>
-        <th style="text-align: center;" colspan="2">Real</th>
+        <th align="center">Item</th>
+        <th align="center" colspan="2">Simulation</th>
+        <th align="center" colspan="2">Real</th>
     </tr>
     <tr>
-        <td style="text-align: center;">Head</td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/head_camera_mount.png" alt="head" style="width: 100%;">
+        <td align="center">Head</td>
+        <td align="center">
+            <p align="center">
+                <img src="./img/head_camera_mount.png" alt="head" width="100%">
                 <figcaption>Head Mount</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/head_camera_mount_install.png" alt="head" style="width: 80%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/head_camera_mount_install.png" alt="head" width="80%">
                 <figcaption>Side View of Assembly</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;" colspan="2">
-            <figure>
-                <img src="./img/real_head.jpg" alt="head" style="width: 20%;">
+        <td align="center" colspan="2">
+            <p align="center">
+                <img src="./img/real_head.jpg" alt="head" width="20%">
                 <figcaption>Front View of Assembly</figcaption>
-            </figure>
+            </p>
         </td>
     </tr>
     <tr>
-        <td style="text-align: center;">Wrist</td>
-        <td style="text-align: center;" colspan="2">
-            <figure>
-                <img src="./img/wrist_and_ring_mount.png" alt="wrist" style="width: 100%;">
+        <td align="center">Wrist</td>
+        <td align="center" colspan="2">
+            <p align="center">
+                <img src="./img/wrist_and_ring_mount.png" alt="wrist" width="100%">
                 <figcaption>Wrist Ring and Camera Mount</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/real_left_hand.jpg" alt="wrist" style="width: 50%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/real_left_hand.jpg" alt="wrist" width="50%">
                 <figcaption>Left Hand Assembly</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/real_right_hand.jpg" alt="wrist" style="width: 50%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/real_right_hand.jpg" alt="wrist" width="50%">
                 <figcaption>Right Hand Assembly</figcaption>
-            </figure>
+            </p>
         </td>
     </tr>
 </table>

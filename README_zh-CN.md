@@ -344,53 +344,54 @@ avp_teleoperate/
 
 <table>
     <tr>
-        <th style="text-align: center;">项目</th>
-        <th style="text-align: center;" colspan="2">仿真</th>
-        <th style="text-align: center;" colspan="2">实物</th>
+        <th align="center">项目</th>
+        <th align="center" colspan="2">仿真</th>
+        <th align="center" colspan="2">实物</th>
     </tr>
     <tr>
-        <td style="text-align: center;">头部</td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/head_camera_mount.png" alt="head" style="width: 100%;">
+        <td align="center">头部</td>
+        <td align="center">
+            <p align="center">
+                <img src="./img/head_camera_mount.png" alt="head" width="100%">
                 <figcaption>头部支架</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/head_camera_mount_install.png" alt="head" style="width: 80%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/head_camera_mount_install.png" alt="head" width="80%">
                 <figcaption>装配侧视</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;" colspan="2">
-            <figure>
-                <img src="./img/real_head.jpg" alt="head" style="width: 20%;">
+        <td align="center" colspan="2">
+            <p align="center">
+                <img src="./img/real_head.jpg" alt="head" width="20%">
                 <figcaption>装配正视</figcaption>
-            </figure>
+            </p>
         </td>
     </tr>
     <tr>
-        <td style="text-align: center;">腕部</td>
-        <td style="text-align: center;" colspan="2">
-            <figure>
-                <img src="./img/wrist_and_ring_mount.png" alt="wrist" style="width: 100%;">
+        <td align="center">腕部</td>
+        <td align="center" colspan="2">
+            <p align="center">
+                <img src="./img/wrist_and_ring_mount.png" alt="wrist" width="100%">
                 <figcaption>腕圈及相机支架</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/real_left_hand.jpg" alt="wrist" style="width: 50%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/real_left_hand.jpg" alt="wrist" width="50%">
                 <figcaption>装配左手</figcaption>
-            </figure>
+            </p>
         </td>
-        <td style="text-align: center;">
-            <figure>
-                <img src="./img/real_right_hand.jpg" alt="wrist" style="width: 50%;">
+        <td align="center">
+            <p align="center">
+                <img src="./img/real_right_hand.jpg" alt="wrist" width="50%">
                 <figcaption>装配右手</figcaption>
-            </figure>
+            </p>
         </td>
     </tr>
 </table>
+
 
 > 注意：如图中红圈所示，腕圈支架与机器人手腕接缝对齐。
 
