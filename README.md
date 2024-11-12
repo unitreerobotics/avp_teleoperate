@@ -9,8 +9,8 @@
 # 📺 Video Demo
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo" target="_blank">
-    <img src="https://img.youtube.com/vi/pNjr2f_XHoo/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
+  <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
+    <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
   </a>
 </p>
 
@@ -34,11 +34,6 @@ Here are the robots that will be supported,
     <td style="text-align: center;">  </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1 (23DoF) </td>
-    <td style="text-align: center;"> &#9201; In Progress </td>
-    <td style="text-align: center;">  </td>
-  </tr>
-  <tr>
     <td style="text-align: center;"> H1 (Arm 4DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
     <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">Refer to this branch's ik temporarily</a> </td>
@@ -46,7 +41,7 @@ Here are the robots that will be supported,
   <tr>
     <td style="text-align: center;"> H1_2 (Arm 7DoF) + Inspire </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/master" target="_blank">Refer to this branch temporarily</a> </td>
+    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1_2" target="_blank">Refer to this branch</a> </td>
   </tr>
   <tr>
     <td style="text-align: center;"> ··· </td>
@@ -192,9 +187,8 @@ This step is to verify that the environment is installed correctly.
 
 6. See your hands in 3D!
 
-<div style="center">
-  <img src="https://oss-global-cdn.unitree.com/static/d079e884c3074e8495f81e78c9586f7f_2556x1179.jpg" width="50%">
-</div>
+
+
 
 
 # 3. 🚀 Usage

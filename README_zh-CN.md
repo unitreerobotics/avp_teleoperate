@@ -9,7 +9,7 @@
 # 📺 视频演示
 
 <p align="center">
-  <a href="https://www.bilibili.com/video/BV1SW421X7kA" target="_blank">
+  <a href="https://www.bilibili.com/video/BV124m8YXExJ" target="_blank">
     <img src="./img/video_cover.jpg" alt="Watch the video" style="width: 35%;">
   </a>
 </p>
@@ -33,11 +33,6 @@
     <th style="text-align: center;"> </th>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1 (23自由度) </td>
-    <td style="text-align: center;"> &#9201; 进行中 </td>
-    <th style="text-align: center;">  </th>
-  </tr>
-  <tr>
     <td style="text-align: center;"> H1 (手臂4自由度) </td>
     <td style="text-align: center;"> &#9201; 进行中 </td>
     <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">可参考该临时分支下ik解算</a> </th>
@@ -45,7 +40,7 @@
   <tr>
     <td style="text-align: center;"> H1_2 (手臂7自由度) + Inspire </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
-    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/master" target="_blank">可参考该临时分支</a>  </th>
+    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1_2" target="_blank">可参考该分支</a>  </th>
   </tr>
   <tr>
     <td style="text-align: center;"> ··· </td>
@@ -193,9 +188,8 @@ unitree@Host:~$ conda activate tv
 
 6. 在 3D 中看到您的手！
 
-<div style="center">
-  <img src="https://oss-global-cdn.unitree.com/static/d079e884c3074e8495f81e78c9586f7f_2556x1179.jpg" width="50%">
-</div>
+
+
 
 
 # 3. 🚀 使用方法
