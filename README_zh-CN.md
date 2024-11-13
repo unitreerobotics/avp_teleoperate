@@ -2,7 +2,7 @@
   <h1 align="center"> avp_teleoperate </h1>
   <h3 align="center"> Unitree Robotics </h3>
   <p align="center">
-    <a href="README.md"> English </a> | <a>中文</a>
+    <a href="README.md"> English </a> | <a>中文</a> | <a href="README_ja-JP.md">日本語</a>
   </p>
 </div>
 
