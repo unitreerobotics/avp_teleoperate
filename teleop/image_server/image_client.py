@@ -160,7 +160,7 @@ class ImageClient:
                     np.copyto(self.tv_img_array, np.array(current_image[:, :self.tv_img_shape[1]]))
                 
                 if self.wrist_enable_shm:
-                    np.copyto(self.wrist_img_array, np.array(current_image[:, self.wrist_img_shape[1]:]))
+                    np.copyto(self.wrist_img_array, np.array(current_image[:, -self.wrist_img_shape[1]:]))
                 
                 if self._image_show:
                     height, width = current_image.shape[:2]

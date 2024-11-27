@@ -1,6 +1,11 @@
+# for dex3-1
 from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize # dds
 from unitree_sdk2py.idl.unitree_hg.msg.dds_ import HandCmd_, HandState_                               # idl
 from unitree_sdk2py.idl.default import unitree_hg_msg_dds__HandCmd_
+# for gripper
+from unitree_sdk2py.core.channel import ChannelPublisher, ChannelSubscriber, ChannelFactoryInitialize # dds
+from unitree_sdk2py.idl.unitree_go.msg.dds_ import MotorCmds_, MotorStates_                           # idl
+from unitree_sdk2py.idl.default import unitree_go_msg_dds__MotorCmd_
 
 import numpy as np
 from enum import IntEnum
@@ -15,8 +20,7 @@ sys.path.append(parent2_dir)
 from teleop.robot_control.hand_retargeting import HandRetargeting, HandType
 
 
-unitree_tip_indices = [4, 9, 14]
-
+unitree_tip_indices = [4, 9, 14] # [thumb, index, middle] in OpenXR
 Dex3_Num_Motors = 7
 kTopicDex3LeftCommand = "rt/dex3/left/cmd"
 kTopicDex3RightCommand = "rt/dex3/right/cmd"
@@ -171,8 +175,7 @@ class Dex3_1_Controller:
                 # Read left and right q_state from shared arrays
                 state_data = np.concatenate((np.array(left_hand_state_array[:]), np.array(right_hand_state_array[:])))
 
-                is_hand_data_initialized = not np.all(left_hand_mat == 0.0)
-                if is_hand_data_initialized:
+                if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
                     left_q_target  = self.hand_retargeting.left_retargeting.retarget(left_hand_mat[unitree_tip_indices])[[0,1,2,3,4,5,6]]
                     right_q_target = self.hand_retargeting.right_retargeting.retarget(right_hand_mat[unitree_tip_indices])[[0,1,2,3,4,5,6]]
 
@@ -210,36 +213,222 @@ class Dex3_1_Right_JointIndex(IntEnum):
     kRightHandSix = 6    # middle_1
 
 
+unitree_gripper_indices = [4, 9] # [thumb, index]
+Gripper_Num_Motors = 2
+kTopicGripperCommand = "rt/unitree_actuator/cmd"
+kTopicGripperState = "rt/unitree_actuator/state"
+
+class Gripper_Controller:
+    def __init__(self, left_hand_array, right_hand_array, dual_gripper_data_lock = None, dual_gripper_state_out = None, dual_gripper_action_out = None, 
+                       fps = 250.0, Unit_Test = False):
+        """
+        [note] A *_array type parameter requires using a multiprocessing Array, because it needs to be passed to the internal child process
+
+        left_hand_array: [input] Left hand skeleton data (required from XR device) to control_thread
+
+        right_hand_array: [input] Right hand skeleton data (required from XR device) to control_thread
+
+        dual_gripper_data_lock: Data synchronization lock for dual_gripper_state_array and dual_gripper_action_array
+
+        dual_gripper_state: [output] Return left(1), right(1) gripper motor state
+
+        dual_gripper_action: [output] Return left(1), right(1) gripper motor action
+
+        fps: Control frequency
+
+        Unit_Test: Whether to enable unit testing
+        """
+
+        print("Initialize Gripper_Controller...")
+
+        self.fps = fps
+        self.Unit_Test = Unit_Test
+
+        if self.Unit_Test:
+            ChannelFactoryInitialize(0)
+ 
+        # initialize handcmd publisher and handstate subscriber
+        self.GripperCmb_publisher = ChannelPublisher(kTopicGripperCommand, MotorCmds_)
+        self.GripperCmb_publisher.Init()
+
+        self.GripperState_subscriber = ChannelSubscriber(kTopicGripperState, MotorStates_)
+        self.GripperState_subscriber.Init()
+
+        self.dual_gripper_state = [0.0] * len(Gripper_JointIndex)
+
+        # initialize subscribe thread
+        self.subscribe_state_thread = threading.Thread(target=self._subscribe_gripper_state)
+        self.subscribe_state_thread.daemon = True
+        self.subscribe_state_thread.start()
+
+        while True:
+            if any(state != 0.0 for state in self.dual_gripper_state):
+                break
+            time.sleep(0.01)
+            print("[Gripper_Controller] Waiting to subscribe dds...")
+
+        self.gripper_control_thread = threading.Thread(target=self.control_thread, args=(left_hand_array, right_hand_array, self.dual_gripper_state,
+                                                                                         dual_gripper_data_lock, dual_gripper_state_out, dual_gripper_action_out))
+        self.gripper_control_thread.daemon = True
+        self.gripper_control_thread.start()
+
+        print("Initialize Gripper_Controller OK!\n")
+
+    def _subscribe_gripper_state(self):
+        while True:
+            gripper_msg  = self.GripperState_subscriber.Read()
+            if gripper_msg is not None:
+                for idx, id in enumerate(Gripper_JointIndex):
+                    self.dual_gripper_state[idx] = gripper_msg.states[id].q
+            time.sleep(0.002)
+    
+    def ctrl_dual_gripper(self, gripper_q_target):
+        """set current left, right gripper motor state target q"""
+        for idx, id in enumerate(Gripper_JointIndex):
+            self.gripper_msg.cmds[id].q = gripper_q_target[idx]
+
+        self.GripperCmb_publisher.Write(self.gripper_msg)
+        # print("gripper ctrl publish ok.")
+    
+    def control_thread(self, left_hand_array, right_hand_array, dual_gripper_state_in, dual_hand_data_lock = None, 
+                             dual_gripper_state_out = None, dual_gripper_action_out = None):
+        self.running = True
+
+        DELTA_GRIPPER_CMD = 0.18         # The motor rotates 5.4 radians, the clamping jaw slide open 9 cm, so 0.6 rad <==> 1 cm, 0.18 rad <==> 3 mm
+        THUMB_INDEX_DISTANCE_MIN = 0.030 # Assuming a minimum Euclidean distance is  3 cm between thumb and index.
+        THUMB_INDEX_DISTANCE_MAX = 0.120 # Assuming a maximum Euclidean distance is 12 cm between thumb and index.
+        LEFT_MAPPED_MIN  = 0.0           # The minimum initial motor position when the gripper closes at startup.
+        RIGHT_MAPPED_MIN = 0.0           # The minimum initial motor position when the gripper closes at startup.
+        # The maximum initial motor position when the gripper closes before calibration (with the rail stroke calculated as 0.6 cm/rad * 9 rad = 5.4 cm).
+        LEFT_MAPPED_MAX = LEFT_MAPPED_MIN + 5.40 
+        RIGHT_MAPPED_MAX = RIGHT_MAPPED_MIN + 5.40
+        left_target_action  = (LEFT_MAPPED_MAX - LEFT_MAPPED_MIN) / 2.0
+        right_target_action = (RIGHT_MAPPED_MAX - RIGHT_MAPPED_MIN) / 2.0
+
+        dq = 0.0
+        tau = 0.0
+        kp = 5.0
+        kd = 0.05
+        # initialize gripper cmd msg
+        self.gripper_msg  = MotorCmds_()
+        self.gripper_msg.cmds = [unitree_go_msg_dds__MotorCmd_() for _ in range(len(Gripper_JointIndex))]
+        for id in Gripper_JointIndex:
+            self.gripper_msg.cmds[id].dq  = dq
+            self.gripper_msg.cmds[id].tau = tau
+            self.gripper_msg.cmds[id].kp  = kp
+            self.gripper_msg.cmds[id].kd  = kd
+
+        try:
+            while self.running:
+                start_time = time.time()
+                # get dual hand skeletal point state from XR device
+                left_hand_mat  = np.array(left_hand_array[:]).reshape(25, 3).copy()
+                right_hand_mat = np.array(right_hand_array[:]).reshape(25, 3).copy()
+
+                if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
+                    left_euclidean_distance  = np.linalg.norm(left_hand_mat[unitree_gripper_indices[1]] - left_hand_mat[unitree_gripper_indices[0]])
+                    right_euclidean_distance = np.linalg.norm(right_hand_mat[unitree_gripper_indices[1]] - left_hand_mat[unitree_gripper_indices[0]])
+                    # Linear mapping from [0, THUMB_INDEX_DISTANCE_MAX] to gripper action range
+                    left_target_action  = np.interp(left_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [LEFT_MAPPED_MIN, LEFT_MAPPED_MAX])
+                    right_target_action = np.interp(right_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [RIGHT_MAPPED_MIN, RIGHT_MAPPED_MAX])
+                # else: # TEST WITHOUT APPLE VISION PRO
+                #     current_time = time.time()
+                #     period = 2.5
+                #     import math
+                #     left_euclidean_distance = THUMB_INDEX_DISTANCE_MAX * (math.sin(2 * math.pi * current_time / period) + 1) / 2
+                #     right_euclidean_distance = THUMB_INDEX_DISTANCE_MAX * (math.sin(2 * math.pi * current_time / period) + 1) / 2
+                #     left_target_action = np.interp(left_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [LEFT_MAPPED_MIN, LEFT_MAPPED_MAX])
+                #     right_target_action = np.interp(right_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [RIGHT_MAPPED_MIN, RIGHT_MAPPED_MAX])
+
+                # get current dual gripper motor state
+                dual_gripper_state = np.array(dual_gripper_state_in[:])
+
+                # clip dual gripper action to avoid overflow
+                left_actual_action  = np.clip(left_target_action,  dual_gripper_state[1] - DELTA_GRIPPER_CMD, dual_gripper_state[1] + DELTA_GRIPPER_CMD) 
+                right_actual_action = np.clip(right_target_action, dual_gripper_state[0] - DELTA_GRIPPER_CMD, dual_gripper_state[0] + DELTA_GRIPPER_CMD)
+
+                dual_gripper_action = np.array([right_actual_action, left_actual_action])
+
+                if dual_gripper_state_out and dual_gripper_action_out:
+                    with dual_hand_data_lock:
+                        dual_gripper_state_out[:] = dual_gripper_state - np.array([RIGHT_MAPPED_MIN, LEFT_MAPPED_MIN])
+                        dual_gripper_action_out[:] = dual_gripper_action - np.array([RIGHT_MAPPED_MIN, LEFT_MAPPED_MIN])
+                
+                # print(f"LEFT: euclidean:{left_euclidean_distance:.4f} \tstate:{dual_gripper_state_out[1]:.4f}\
+                #       \ttarget_action:{right_target_action - RIGHT_MAPPED_MIN:.4f} \tactual_action:{dual_gripper_action_out[1]:.4f}")
+                # print(f"RIGHT:euclidean:{right_euclidean_distance:.4f} \tstate:{dual_gripper_state_out[0]:.4f}\
+                #       \ttarget_action:{left_target_action - LEFT_MAPPED_MIN:.4f} \tactual_action:{dual_gripper_action_out[0]:.4f}")
+
+                self.ctrl_dual_gripper(dual_gripper_action)
+                current_time = time.time()
+                time_elapsed = current_time - start_time
+                sleep_time = max(0, (1 / self.fps) - time_elapsed)
+                time.sleep(sleep_time)
+        finally:
+            print("Gripper_Controller has been closed.")
+
+class Gripper_JointIndex(IntEnum):
+    kLeftGripper = 0
+    kRightGripper = 1
+
+
 if __name__ == "__main__":
     import argparse
     from teleop.open_television.tv_wrapper import TeleVisionWrapper
     from teleop.image_server.image_client import ImageClient
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--binocular', action='store_true', help='Use binocular camera')
-    parser.add_argument('--monocular', dest='binocular', action='store_false', help='Use monocular camera')
-    parser.set_defaults(binocular=True)
+    parser.add_argument('--dex', action='store_true', help='Use dex3-1 hand')
+    parser.add_argument('--gripper', dest='dex', action='store_false', help='Use gripper')
+    parser.set_defaults(dex=True)
     args = parser.parse_args()
     print(f"args:{args}\n")
 
     # image
-    img_shape = (480, 1280, 3)
-    img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
-    img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
-    img_client = ImageClient(tv_img_shape = img_shape, tv_img_shm_name = img_shm.name)
-    image_receive_thread = threading.Thread(target=img_client.receive_process, daemon=True)
+    img_config = {
+        'fps': 30,
+        'head_camera_type': 'opencv',
+        'head_camera_image_shape': [480, 1280],  # Head camera resolution
+        'head_camera_id_numbers': [0],
+        'wrist_camera_type': 'opencv',
+        'wrist_camera_image_shape': [480, 640],  # Wrist camera resolution
+        'wrist_camera_id_numbers': [2, 4],
+    }
+    ASPECT_RATIO_THRESHOLD = 2.0  # If the aspect ratio exceeds this value, it is considered binocular
+    if len(img_config['head_camera_id_numbers']) > 1 or (img_config['head_camera_image_shape'][1] / img_config['head_camera_image_shape'][0] > ASPECT_RATIO_THRESHOLD):
+        BINOCULAR = True
+    else:
+        BINOCULAR = False
+    # image
+    if BINOCULAR and not (img_config['head_camera_image_shape'][1] / img_config['head_camera_image_shape'][0] > ASPECT_RATIO_THRESHOLD):
+        tv_img_shape = (img_config['head_camera_image_shape'][0], img_config['head_camera_image_shape'][1] * 2, 3)
+    else:
+        tv_img_shape = (img_config['head_camera_image_shape'][0], img_config['head_camera_image_shape'][1], 3)
+
+    img_shm = shared_memory.SharedMemory(create = True, size = np.prod(tv_img_shape) * np.uint8().itemsize)
+    img_array = np.ndarray(tv_img_shape, dtype = np.uint8, buffer = img_shm.buf)
+    img_client = ImageClient(tv_img_shape = tv_img_shape, tv_img_shm_name = img_shm.name)
+    image_receive_thread = threading.Thread(target = img_client.receive_process, daemon = True)
     image_receive_thread.daemon = True
     image_receive_thread.start()
 
     # television and arm
-    tv_wrapper = TeleVisionWrapper(args.binocular, img_shape, img_shm.name)
+    tv_wrapper = TeleVisionWrapper(BINOCULAR, tv_img_shape, img_shm.name)
 
-    left_hand_array = Array('d', 75, lock=True)
-    right_hand_array = Array('d', 75, lock=True)
-    dual_hand_data_lock = Lock()
-    dual_hand_state_array = Array('d', 14, lock=False)  # current left, right hand state(14) data.
-    dual_hand_action_array = Array('d', 14, lock=False) # current left, right hand action(14) data.
-    hand_ctrl = Dex3_1_Controller(left_hand_array, right_hand_array, dual_hand_data_lock, dual_hand_state_array, dual_hand_action_array, Unit_Test = True)
+    if args.dex:
+        left_hand_array = Array('d', 75, lock=True)
+        right_hand_array = Array('d', 75, lock=True)
+        dual_hand_data_lock = Lock()
+        dual_hand_state_array = Array('d', 14, lock=False)  # current left, right hand state(14) data.
+        dual_hand_action_array = Array('d', 14, lock=False) # current left, right hand action(14) data.
+        hand_ctrl = Dex3_1_Controller(left_hand_array, right_hand_array, dual_hand_data_lock, dual_hand_state_array, dual_hand_action_array, Unit_Test = True)
+    else:
+        left_hand_array = Array('d', 75, lock=True)
+        right_hand_array = Array('d', 75, lock=True)
+        dual_gripper_data_lock = Lock()
+        dual_gripper_state_array = Array('d', 2, lock=False)   # current left, right gripper state(2) data.
+        dual_gripper_action_array = Array('d', 2, lock=False)  # current left, right gripper action(2) data.
+        gripper_ctrl = Gripper_Controller(left_hand_array, right_hand_array, dual_gripper_data_lock, dual_gripper_state_array, dual_gripper_action_array, Unit_Test = True)
 
 
     user_input = input("Please enter the start signal (enter 's' to start the subsequent program):\n")
@@ -249,5 +438,7 @@ if __name__ == "__main__":
             # send hand skeleton data to hand_ctrl.control_process
             left_hand_array[:] = left_hand.flatten()
             right_hand_array[:] = right_hand.flatten()
-            print(f"Dual hand state array: {list(dual_hand_state_array)}")
+
+            # with dual_hand_data_lock:
+            #     print(f"state : {list(dual_hand_state_array)} \naction: {list(dual_hand_action_array)} \n")
             time.sleep(0.01)

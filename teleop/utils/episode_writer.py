@@ -4,10 +4,11 @@ import json
 import datetime
 import numpy as np
 import time
+from .rerun_visualizer import RerunLogger
 
 
-class EpisodeWriter(object):
-    def __init__(self, task_dir, frequency=30, image_size=[640, 480]):
+class EpisodeWriter():
+    def __init__(self, task_dir, frequency=30, image_size=[640, 480], log = False):
         """
         image_size: [width, height]
         """
@@ -20,6 +21,7 @@ class EpisodeWriter(object):
         self.episode_data = []
         self.item_id = -1
         self.episode_id = -1
+        self.log = log
         if os.path.exists(self.task_dir):
             episode_dirs = [episode_dir for episode_dir in os.listdir(self.task_dir) if 'episode_' in episode_dir]
             episode_last = sorted(episode_dirs)[-1] if len(episode_dirs) > 0 else None
@@ -83,8 +85,10 @@ class EpisodeWriter(object):
         os.makedirs(self.color_dir, exist_ok=True)
         os.makedirs(self.depth_dir, exist_ok=True)
         os.makedirs(self.audio_dir, exist_ok=True)
+        if self.log:
+            self.online_logger = RerunLogger(prefix="online/", IdxRangeBoundary = 60)
         
-    def add_item(self, colors, depths=None, states=None, actions=None, tactiles=None, audios=None, log = True):
+    def add_item(self, colors, depths=None, states=None, actions=None, tactiles=None, audios=None):
         self.item_id += 1
         item_data = {
             'idx': self.item_id,
@@ -125,9 +129,10 @@ class EpisodeWriter(object):
 
         self.episode_data.append(item_data)
 
-        if log:
+        if self.log:
             curent_record_time = time.time()
             print(f"==> episode_id:{self.episode_id}  item_id:{self.item_id}  current_time:{curent_record_time}")
+            self.online_logger.log_item_data(item_data)
 
 
     def save_episode(self):
