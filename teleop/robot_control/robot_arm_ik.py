@@ -43,21 +43,21 @@ class G1_29_ArmIK:
                                         "waist_roll_joint" ,
                                         "waist_pitch_joint" ,
                                         
-                                        "left_hand_zero_joint" ,
-                                        "left_hand_one_joint" ,
-                                        "left_hand_two_joint" ,
-                                        "left_hand_three_joint" ,
-                                        "left_hand_four_joint" ,
-                                        "left_hand_five_joint" ,
-                                        "left_hand_six_joint" ,
+                                        "left_hand_thumb_0_joint" ,
+                                        "left_hand_thumb_1_joint" ,
+                                        "left_hand_thumb_2_joint" ,
+                                        "left_hand_middle_0_joint" ,
+                                        "left_hand_middle_1_joint" ,
+                                        "left_hand_index_0_joint" ,
+                                        "left_hand_index_1_joint" ,
                                         
-                                        "right_hand_zero_joint" ,
-                                        "right_hand_one_joint" ,
-                                        "right_hand_two_joint" ,
-                                        "right_hand_three_joint" ,
-                                        "right_hand_four_joint" ,
-                                        "right_hand_five_joint" ,
-                                        "right_hand_six_joint"
+                                        "right_hand_thumb_0_joint" ,
+                                        "right_hand_thumb_1_joint" ,
+                                        "right_hand_thumb_2_joint" ,
+                                        "right_hand_index_0_joint" ,
+                                        "right_hand_index_1_joint" ,
+                                        "right_hand_middle_0_joint",
+                                        "right_hand_middle_1_joint"
                                     ]
 
         self.reduced_robot = self.robot.buildReducedRobot(

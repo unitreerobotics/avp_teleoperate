@@ -166,7 +166,7 @@ if __name__ == '__main__':
     img_shape = (480, 640 * 2, 3)
     img_shm = shared_memory.SharedMemory(create=True, size=np.prod(img_shape) * np.uint8().itemsize)
     img_array = np.ndarray(img_shape, dtype=np.uint8, buffer=img_shm.buf)
-    img_client = ImageClient(img_shape = img_shape, img_shm_name = img_shm.name)
+    img_client = ImageClient(tv_img_shape = img_shape, tv_img_shm_name = img_shm.name)
     image_receive_thread = threading.Thread(target=img_client.receive_process, daemon=True)
     image_receive_thread.start()
 

@@ -83,9 +83,11 @@ class G1_29_ArmController:
         print(f"Current all body motor state q:\n{self.all_motor_q} \n")
         print(f"Current two arms motor state q:\n{self.get_current_dual_arm_q()}\n")
         print("Lock all joints except two arms...\n")
+
+        arm_indices = set(member.value for member in G1_29_JointArmIndex)
         for id in G1_29_JointIndex:
             self.msg.motor_cmd[id].mode = 1
-            if id in G1_29_JointArmIndex:
+            if id.value in arm_indices:
                 if self._Is_wrist_motor(id):
                     self.msg.motor_cmd[id].kp = self.kp_wrist
                     self.msg.motor_cmd[id].kd = self.kd_wrist
@@ -191,31 +193,31 @@ class G1_29_ArmController:
 
     def _Is_weak_motor(self, motor_index):
         weak_motors = [
-            G1_29_JointIndex.kLeftAnklePitch,
-            G1_29_JointIndex.kRightAnklePitch,
+            G1_29_JointIndex.kLeftAnklePitch.value,
+            G1_29_JointIndex.kRightAnklePitch.value,
             # Left arm
-            G1_29_JointIndex.kLeftShoulderPitch,
-            G1_29_JointIndex.kLeftShoulderRoll,
-            G1_29_JointIndex.kLeftShoulderYaw,
-            G1_29_JointIndex.kLeftElbow,
+            G1_29_JointIndex.kLeftShoulderPitch.value,
+            G1_29_JointIndex.kLeftShoulderRoll.value,
+            G1_29_JointIndex.kLeftShoulderYaw.value,
+            G1_29_JointIndex.kLeftElbow.value,
             # Right arm
-            G1_29_JointIndex.kRightShoulderPitch,
-            G1_29_JointIndex.kRightShoulderRoll,
-            G1_29_JointIndex.kRightShoulderYaw,
-            G1_29_JointIndex.kRightElbow,
+            G1_29_JointIndex.kRightShoulderPitch.value,
+            G1_29_JointIndex.kRightShoulderRoll.value,
+            G1_29_JointIndex.kRightShoulderYaw.value,
+            G1_29_JointIndex.kRightElbow.value,
         ]
-        return motor_index in weak_motors
+        return motor_index.value in weak_motors
     
     def _Is_wrist_motor(self, motor_index):
         wrist_motors = [
-            G1_29_JointIndex.kLeftWristRoll,
-            G1_29_JointIndex.kLeftWristPitch,
-            G1_29_JointIndex.kLeftWristyaw,
-            G1_29_JointIndex.kRightWristRoll,
-            G1_29_JointIndex.kRightWristPitch,
-            G1_29_JointIndex.kRightWristYaw,
+            G1_29_JointIndex.kLeftWristRoll.value,
+            G1_29_JointIndex.kLeftWristPitch.value,
+            G1_29_JointIndex.kLeftWristyaw.value,
+            G1_29_JointIndex.kRightWristRoll.value,
+            G1_29_JointIndex.kRightWristPitch.value,
+            G1_29_JointIndex.kRightWristYaw.value,
         ]
-        return motor_index in wrist_motors
+        return motor_index.value in wrist_motors
 
 class G1_29_JointArmIndex(IntEnum):
     # Left arm

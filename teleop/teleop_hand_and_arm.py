@@ -21,7 +21,7 @@ from teleop.utils.episode_writer import EpisodeWriter
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task_dir', type = str, default = 'data', help = 'path to save data')
+    parser.add_argument('--task_dir', type = str, default = './utils/data', help = 'path to save data')
     parser.add_argument('--frequency', type = int, default = 30.0, help = 'save data\'s frequency')
 
     parser.add_argument('--record', action = 'store_true', help = 'Save data or not')
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--dex', action='store_true', help='Use dex3-1 hand')
     parser.add_argument('--gripper', dest='dex', action='store_false', help='Use gripper')
-    parser.set_defaults(dex = False)
+    parser.set_defaults(dex = True)
     args = parser.parse_args()
     print(f"args:{args}\n")
 

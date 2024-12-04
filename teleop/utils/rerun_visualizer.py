@@ -198,7 +198,7 @@ if __name__ == "__main__":
     else:
         print("rerun_testdata exits.")
 
-    episode_reader = RerunEpisodeReader()
+    episode_reader = RerunEpisodeReader(task_dir=".")
     episode_data6 = episode_reader.return_episode_data(6)
     episode_data8 = episode_reader.return_episode_data(8)
 

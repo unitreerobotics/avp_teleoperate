@@ -176,8 +176,16 @@ class Dex3_1_Controller:
                 state_data = np.concatenate((np.array(left_hand_state_array[:]), np.array(right_hand_state_array[:])))
 
                 if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
-                    left_q_target  = self.hand_retargeting.left_retargeting.retarget(left_hand_mat[unitree_tip_indices])[[0,1,2,3,4,5,6]]
-                    right_q_target = self.hand_retargeting.right_retargeting.retarget(right_hand_mat[unitree_tip_indices])[[0,1,2,3,4,5,6]]
+                    ref_left_value = left_hand_mat[unitree_tip_indices]
+                    ref_right_value = right_hand_mat[unitree_tip_indices]
+                    ref_left_value[0] = ref_left_value[0] * 1.15
+                    ref_left_value[1] = ref_left_value[1] * 1.05
+                    ref_left_value[2] = ref_left_value[2] * 0.95
+                    ref_right_value[0] = ref_right_value[0] * 1.15
+                    ref_right_value[1] = ref_right_value[1] * 1.05
+                    ref_right_value[2] = ref_right_value[2] * 0.95
+                    left_q_target  = self.hand_retargeting.left_retargeting.retarget(ref_left_value)[[0,1,2,3,4,5,6]]
+                    right_q_target = self.hand_retargeting.right_retargeting.retarget(ref_right_value)[[0,1,2,3,4,5,6]]
 
                 # get dual hand action
                 action_data = np.concatenate((left_q_target, right_q_target))    
@@ -195,22 +203,22 @@ class Dex3_1_Controller:
             print("Dex3_1_Controller has been closed.")
 
 class Dex3_1_Left_JointIndex(IntEnum):
-    kLeftHandZero = 0   # thumb_0
-    kLeftHandOne = 1    # thumb_1
-    kLeftHandTwo = 2    # thumb_2
-    kLeftHandFive = 3   # middle_0
-    kLeftHandSix = 4    # middle_0
-    kLeftHandThree = 5  # index_0
-    kLeftHandFour = 6   # index_1
+    kLeftHandThumb0 = 0
+    kLeftHandThumb1 = 1
+    kLeftHandThumb2 = 2
+    kLeftHandMiddle0 = 3
+    kLeftHandMiddle1 = 4
+    kLeftHandIndex0 = 5
+    kLeftHandIndex1 = 6
 
 class Dex3_1_Right_JointIndex(IntEnum):
-    kRightHandZero = 0   # thumb_0
-    kRightHandOne = 1    # thumb_1
-    kRightHandTwo = 2    # thumb_2
-    kRightHandThree = 3  # index_0
-    kRightHandFour = 4   # index_1
-    kRightHandFive = 5   # middle_0
-    kRightHandSix = 6    # middle_1
+    kRightHandThumb0 = 0
+    kRightHandThumb1 = 1
+    kRightHandThumb2 = 2
+    kRightHandIndex0 = 3
+    kRightHandIndex1 = 4
+    kRightHandMiddle0 = 5
+    kRightHandMiddle1 = 6
 
 
 unitree_gripper_indices = [4, 9] # [thumb, index]
@@ -390,9 +398,6 @@ if __name__ == "__main__":
         'head_camera_type': 'opencv',
         'head_camera_image_shape': [480, 1280],  # Head camera resolution
         'head_camera_id_numbers': [0],
-        'wrist_camera_type': 'opencv',
-        'wrist_camera_image_shape': [480, 640],  # Wrist camera resolution
-        'wrist_camera_id_numbers': [2, 4],
     }
     ASPECT_RATIO_THRESHOLD = 2.0  # If the aspect ratio exceeds this value, it is considered binocular
     if len(img_config['head_camera_id_numbers']) > 1 or (img_config['head_camera_image_shape'][1] / img_config['head_camera_image_shape'][0] > ASPECT_RATIO_THRESHOLD):
