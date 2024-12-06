@@ -143,8 +143,10 @@ if __name__ == '__main__':
                 sol_q ,tau_ff, flag = arm_ik.ik_fun(left_pose, right_pose, armstate, armv)
                 
                 if flag:
-                    q_poseList[12:20] = sol_q
-                    q_tau_ff[12:20] = tau_ff
+                    q_poseList[12:16] = sol_q[4:8]
+                    q_poseList[16:20] = sol_q[0:4]
+                    q_tau_ff[12:16] = tau_ff[4:8]
+                    q_tau_ff[16:20] = tau_ff[0:4]
                 else:
                     q_poseList[13:27] = armstate
                     q_tau_ff = np.zeros(20)
