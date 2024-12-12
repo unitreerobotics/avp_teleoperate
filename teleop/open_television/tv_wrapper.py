@@ -139,8 +139,8 @@ class TeleVisionWrapper:
         head_rmat = head_mat[:3, :3]
         # The origin of the coordinate for IK Solve is the WAIST joint motor. You can use teleop/robot_control/robot_arm_ik.py Unit_Test to check it.
         # The origin of the coordinate of unitree_left_wrist is HEAD. So it is necessary to translate the origin of unitree_left_wrist from HEAD to WAIST.
-        unitree_left_wrist[0, 3] +=0.20
-        unitree_right_wrist[0,3] +=0.20
+        unitree_left_wrist[0, 3] +=0.15
+        unitree_right_wrist[0,3] +=0.15
         unitree_left_wrist[2, 3] +=0.45
         unitree_right_wrist[2,3] +=0.45
 

@@ -97,7 +97,7 @@ if __name__ == '__main__':
         gripper_ctrl = Gripper_Controller(left_hand_array, right_hand_array, dual_gripper_data_lock, dual_gripper_state_array, dual_gripper_action_array)
     
     if args.record:
-        recorder = EpisodeWriter(task_dir = args.task_dir, frequency = args.frequency, log = True)
+        recorder = EpisodeWriter(task_dir = args.task_dir, frequency = args.frequency, rerun_log = True)
         
     try:
         user_input = input("Please enter the start signal (enter 'r' to start the subsequent program):\n")
@@ -156,10 +156,10 @@ if __name__ == '__main__':
                             right_hand_action = dual_hand_action_array[-7:]
                     else:
                         with dual_gripper_data_lock:
-                            left_hand_state = dual_gripper_state_array[1]
-                            right_hand_state = dual_gripper_state_array[0]
-                            left_hand_action = dual_gripper_action_array[1]
-                            right_hand_action = dual_gripper_action_array[0]
+                            left_hand_state = [dual_gripper_state_array[1]]
+                            right_hand_state = [dual_gripper_state_array[0]]
+                            left_hand_action = [dual_gripper_action_array[1]]
+                            right_hand_action = [dual_gripper_action_array[0]]
                     # head image
                     current_tv_image = tv_img_array.copy()
                     # wrist image
@@ -247,5 +247,6 @@ if __name__ == '__main__':
         if WRIST:
             wrist_img_shm.unlink()
             wrist_img_shm.close()
+        recorder.close()
         print("Finally, exiting program...")
         exit(0)

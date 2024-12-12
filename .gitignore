@@ -19,5 +19,4 @@ __MACOSX/
 !real_right_hand.jpg
 !wrist_and_ring_mount.png
 teleop/data/
-teleop/utils/episode_0*
-teleop/utils/data/episode_0*
+episode_0*

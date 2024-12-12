@@ -18,6 +18,7 @@ from multiprocessing import Process, shared_memory, Array, Lock
 parent2_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(parent2_dir)
 from teleop.robot_control.hand_retargeting import HandRetargeting, HandType
+from teleop.utils.weighted_moving_filter import WeightedMovingFilter
 
 
 unitree_tip_indices = [4, 9, 14] # [thumb, index, middle] in OpenXR
@@ -228,7 +229,7 @@ kTopicGripperState = "rt/unitree_actuator/state"
 
 class Gripper_Controller:
     def __init__(self, left_hand_array, right_hand_array, dual_gripper_data_lock = None, dual_gripper_state_out = None, dual_gripper_action_out = None, 
-                       fps = 250.0, Unit_Test = False):
+                       filter = True, fps = 200.0, Unit_Test = False):
         """
         [note] A *_array type parameter requires using a multiprocessing Array, because it needs to be passed to the internal child process
 
@@ -251,6 +252,10 @@ class Gripper_Controller:
 
         self.fps = fps
         self.Unit_Test = Unit_Test
+        if filter:
+            self.smooth_filter = WeightedMovingFilter(np.array([0.5, 0.3, 0.2]), Gripper_Num_Motors)
+        else:
+            self.smooth_filter = None
 
         if self.Unit_Test:
             ChannelFactoryInitialize(0)
@@ -303,8 +308,8 @@ class Gripper_Controller:
         self.running = True
 
         DELTA_GRIPPER_CMD = 0.18         # The motor rotates 5.4 radians, the clamping jaw slide open 9 cm, so 0.6 rad <==> 1 cm, 0.18 rad <==> 3 mm
-        THUMB_INDEX_DISTANCE_MIN = 0.030 # Assuming a minimum Euclidean distance is  3 cm between thumb and index.
-        THUMB_INDEX_DISTANCE_MAX = 0.120 # Assuming a maximum Euclidean distance is 12 cm between thumb and index.
+        THUMB_INDEX_DISTANCE_MIN = 0.05  # Assuming a minimum Euclidean distance is 5 cm between thumb and index.
+        THUMB_INDEX_DISTANCE_MAX = 0.07  # Assuming a maximum Euclidean distance is 9 cm between thumb and index.
         LEFT_MAPPED_MIN  = 0.0           # The minimum initial motor position when the gripper closes at startup.
         RIGHT_MAPPED_MIN = 0.0           # The minimum initial motor position when the gripper closes at startup.
         # The maximum initial motor position when the gripper closes before calibration (with the rail stroke calculated as 0.6 cm/rad * 9 rad = 5.4 cm).
@@ -315,7 +320,7 @@ class Gripper_Controller:
 
         dq = 0.0
         tau = 0.0
-        kp = 5.0
+        kp = 5.00
         kd = 0.05
         # initialize gripper cmd msg
         self.gripper_msg  = MotorCmds_()
@@ -335,11 +340,11 @@ class Gripper_Controller:
 
                 if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
                     left_euclidean_distance  = np.linalg.norm(left_hand_mat[unitree_gripper_indices[1]] - left_hand_mat[unitree_gripper_indices[0]])
-                    right_euclidean_distance = np.linalg.norm(right_hand_mat[unitree_gripper_indices[1]] - left_hand_mat[unitree_gripper_indices[0]])
+                    right_euclidean_distance = np.linalg.norm(right_hand_mat[unitree_gripper_indices[1]] - right_hand_mat[unitree_gripper_indices[0]])
                     # Linear mapping from [0, THUMB_INDEX_DISTANCE_MAX] to gripper action range
                     left_target_action  = np.interp(left_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [LEFT_MAPPED_MIN, LEFT_MAPPED_MAX])
                     right_target_action = np.interp(right_euclidean_distance, [THUMB_INDEX_DISTANCE_MIN, THUMB_INDEX_DISTANCE_MAX], [RIGHT_MAPPED_MIN, RIGHT_MAPPED_MAX])
-                # else: # TEST WITHOUT APPLE VISION PRO
+                # else: # TEST WITHOUT XR DEVICE
                 #     current_time = time.time()
                 #     period = 2.5
                 #     import math
@@ -356,6 +361,10 @@ class Gripper_Controller:
                 right_actual_action = np.clip(right_target_action, dual_gripper_state[0] - DELTA_GRIPPER_CMD, dual_gripper_state[0] + DELTA_GRIPPER_CMD)
 
                 dual_gripper_action = np.array([right_actual_action, left_actual_action])
+
+                if self.smooth_filter:
+                    self.smooth_filter.add_data(dual_gripper_action)
+                    dual_gripper_action = self.smooth_filter.filtered_data
 
                 if dual_gripper_state_out and dual_gripper_action_out:
                     with dual_hand_data_lock:

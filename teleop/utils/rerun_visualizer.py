@@ -70,31 +70,28 @@ class RerunEpisodeReader:
         return audio_data
 
 class RerunLogger:
-    def __init__(self, prefix = "", IdxRangeBoundary = 30, memory_limit = "200MB"):
-        rr.init(datetime.now().strftime("Runtime_%Y%m%d_%H%M%S"))
-        rr.spawn(memory_limit = memory_limit)
-
+    def __init__(self, prefix = "", IdxRangeBoundary = 30, memory_limit = None):
         self.prefix = prefix
         self.IdxRangeBoundary = IdxRangeBoundary
+        rr.init(datetime.now().strftime("Runtime_%Y%m%d_%H%M%S"))
+        if memory_limit:
+            rr.spawn(memory_limit = memory_limit, hide_welcome_screen = True)
+        else:
+            rr.spawn(hide_welcome_screen = True)
+
         # Set up blueprint for live visualization
         if self.IdxRangeBoundary:
             self.setup_blueprint()
 
     def setup_blueprint(self):
+        views = []
+
         data_plot_paths = [
                            f"{self.prefix}left_arm", 
                            f"{self.prefix}right_arm", 
                            f"{self.prefix}left_hand", 
                            f"{self.prefix}right_hand"
         ]
-        image_plot_paths = [
-                            f"{self.prefix}colors/color_0",
-                            f"{self.prefix}colors/color_1",
-                            f"{self.prefix}colors/color_2",
-                            f"{self.prefix}colors/color_3"
-        ]
-
-        views = []
         for plot_path in data_plot_paths:
             view = rrb.TimeSeriesView(
                 origin = plot_path,
@@ -109,24 +106,32 @@ class RerunLogger:
             )
             views.append(view)
 
-        for plot_path in image_plot_paths:
-            view = rrb.Spatial2DView(
-                origin = plot_path,
-                time_ranges=[
-                    rrb.VisibleTimeRange(
-                        "idx",
-                        start = rrb.TimeRangeBoundary.cursor_relative(seq = -self.IdxRangeBoundary),
-                        end = rrb.TimeRangeBoundary.cursor_relative(),
-                    )
-                ],
-            )
-            views.append(view)
+        # image_plot_paths = [
+        #                     f"{self.prefix}colors/color_0",
+        #                     f"{self.prefix}colors/color_1",
+        #                     f"{self.prefix}colors/color_2",
+        #                     f"{self.prefix}colors/color_3"
+        # ]
+        # for plot_path in image_plot_paths:
+        #     view = rrb.Spatial2DView(
+        #         origin = plot_path,
+        #         time_ranges=[
+        #             rrb.VisibleTimeRange(
+        #                 "idx",
+        #                 start = rrb.TimeRangeBoundary.cursor_relative(seq = -self.IdxRangeBoundary),
+        #                 end = rrb.TimeRangeBoundary.cursor_relative(),
+        #             )
+        #         ],
+        #     )
+        #     views.append(view)
 
         grid = rrb.Grid(contents = views,
                         grid_columns=2,               
                         column_shares=[1, 1],
-                        row_shares=[1, 1, 0.5], 
+                        row_shares=[1, 1], 
         )
+        views.append(rr.blueprint.SelectionPanel(state=rrb.PanelState.Collapsed))
+        views.append(rr.blueprint.TimePanel(state=rrb.PanelState.Collapsed))
         rr.send_blueprint(grid)
 
 
@@ -149,30 +154,30 @@ class RerunLogger:
                 for idx, val in enumerate(values):
                     rr.log(f"{self.prefix}{part}/actions/qpos/{idx}", rr.Scalar(val))
 
-        # Log colors (images)
-        colors = item_data.get('colors', {}) or {}
-        for color_key, color_val in colors.items():
-            if color_val is not None:
-                rr.log(f"{self.prefix}colors/{color_key}", rr.Image(color_val))
+        # # Log colors (images)
+        # colors = item_data.get('colors', {}) or {}
+        # for color_key, color_val in colors.items():
+        #     if color_val is not None:
+        #         rr.log(f"{self.prefix}colors/{color_key}", rr.Image(color_val))
 
-        # Log depths (images)
-        depths = item_data.get('depths', {}) or {}
-        for depth_key, depth_val in depths.items():
-            if depth_val is not None:
-                # rr.log(f"{self.prefix}depths/{depth_key}", rr.Image(depth_val))
-                pass # Handle depth if needed
+        # # Log depths (images)
+        # depths = item_data.get('depths', {}) or {}
+        # for depth_key, depth_val in depths.items():
+        #     if depth_val is not None:
+        #         # rr.log(f"{self.prefix}depths/{depth_key}", rr.Image(depth_val))
+        #         pass # Handle depth if needed
 
-        # Log tactile if needed
-        tactiles = item_data.get('tactiles', {}) or {}
-        for hand, tactile_vals in tactiles.items():
-            if tactile_vals is not None:
-                pass # Handle tactile if needed
+        # # Log tactile if needed
+        # tactiles = item_data.get('tactiles', {}) or {}
+        # for hand, tactile_vals in tactiles.items():
+        #     if tactile_vals is not None:
+        #         pass # Handle tactile if needed
 
-        # Log audios if needed
-        audios = item_data.get('audios', {}) or {}
-        for audio_key, audio_val in audios.items():
-            if audio_val is not None:
-                pass  # Handle audios if needed
+        # # Log audios if needed
+        # audios = item_data.get('audios', {}) or {}
+        # for audio_key, audio_val in audios.items():
+        #     if audio_val is not None:
+        #         pass  # Handle audios if needed
 
     def log_episode_data(self, episode_data: list):
         for item_data in episode_data:
@@ -183,49 +188,57 @@ if __name__ == "__main__":
     import gdown
     import zipfile
     import os
-    url = "https://drive.google.com/file/d/1f5UuFl1z_gaByg_7jDRj1_NxfJZh2evD/view?usp=sharing"
     zip_file = "rerun_testdata.zip"
-    if not os.path.exists("episode_0006"):
+    zip_file_download_url = "https://drive.google.com/file/d/1f5UuFl1z_gaByg_7jDRj1_NxfJZh2evD/view?usp=sharing"
+    unzip_file_output_dir = "./testdata"
+    if not os.path.exists(os.path.join(unzip_file_output_dir, "episode_0006")):
         if not os.path.exists(zip_file):
-            file_id = url.split('/')[5]
+            file_id = zip_file_download_url.split('/')[5]
             gdown.download(id=file_id, output=zip_file, quiet=False)
             print("download ok.")
+        if not os.path.exists(unzip_file_output_dir):
+            os.makedirs(unzip_file_output_dir)
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            zip_ref.extractall(".")
+            zip_ref.extractall(unzip_file_output_dir)
         print("uncompress ok.")
         os.remove(zip_file)
         print("clean file ok.")
     else:
         print("rerun_testdata exits.")
 
-    episode_reader = RerunEpisodeReader(task_dir=".")
-    episode_data6 = episode_reader.return_episode_data(6)
-    episode_data8 = episode_reader.return_episode_data(8)
 
-    # Example 1: Offline Visualization
-    user_input = input("Please enter the start signal (enter 'off' to start the subsequent program):\n")
+    episode_reader = RerunEpisodeReader(task_dir = unzip_file_output_dir)
+    # TEST EXAMPLE 1 : OFFLINE DATA TEST
+    user_input = input("Please enter the start signal (enter 'off' or 'on' to start the subsequent program):\n")
     if user_input.lower() == 'off':
+        episode_data6 = episode_reader.return_episode_data(6)
         print("Starting offline visualization...")
         offline_logger = RerunLogger(prefix="offline/")
         offline_logger.log_episode_data(episode_data6)
         print("Offline visualization completed.")
 
-    # Example 2: Online Visualization with Fixed Time Window
-    user_input = input("Please enter the start signal (enter 'on' to start the subsequent program):\n")
+    # TEST EXAMPLE 2 : ONLINE DATA TEST, SLIDE WINDOW SIZE IS 60, MEMORY LIMIT IS 50MB
     if user_input.lower() == 'on':
+        episode_data8 = episode_reader.return_episode_data(8)
         print("Starting online visualization with fixed idx size...")
-        online_logger = RerunLogger(prefix="online/", IdxRangeBoundary = 60)
-        for item_data in episode_data6:
-            online_logger.log_item_data(item_data)
-            time.sleep(0.033) # 30hz
-        print("Online visualization completed.")
-
-    # Example 3: Online Visualization with Fixed Time Window
-    user_input = input("Please enter the start signal (enter 'on' to start the subsequent program):\n")
-    if user_input.lower() == 'on':
-        print("Starting online visualization with fixed idx size...")
-        online_logger = RerunLogger(prefix="online/", IdxRangeBoundary = 60)
+        online_logger = RerunLogger(prefix="online/", IdxRangeBoundary = 60, memory_limit='50MB')
         for item_data in episode_data8:
             online_logger.log_item_data(item_data)
             time.sleep(0.033) # 30hz
         print("Online visualization completed.")
+
+
+    # # TEST DATA OF data_dir
+    # data_dir = "./data"
+    # episode_data_number = 10
+    # episode_reader2 = RerunEpisodeReader(task_dir = data_dir)
+    # user_input = input("Please enter the start signal (enter 'on' to start the subsequent program):\n")
+    # episode_data8 = episode_reader2.return_episode_data(episode_data_number)
+    # if user_input.lower() == 'on':
+    #     # Example 2: Offline Visualization with Fixed Time Window
+    #     print("Starting offline visualization with fixed idx size...")
+    #     online_logger = RerunLogger(prefix="offline/", IdxRangeBoundary = 60)
+    #     for item_data in episode_data8:
+    #         online_logger.log_item_data(item_data)
+    #         time.sleep(0.033) # 30hz
+    #     print("Offline visualization completed.")
