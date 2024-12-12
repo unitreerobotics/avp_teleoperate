@@ -274,7 +274,7 @@ At this time, **Operator A** can remotely control the robot's arms and dexterous
 
 Next, **Operator B** can press **s** key to begin recording data in the 'record image' window that opens, and press **s** again to stop. This can be repeated as necessary.
 
-> p.s. Recorded data is stored in `avp_teleoperate/teleop/data` by default, with usage instructions at this repo:  [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion).
+> p.s. Recorded data is stored in `avp_teleoperate/teleop/utils/data` by default, with usage instructions at this repo:  [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion).
 
 ## 3.4 🔚 Exit
 

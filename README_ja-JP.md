@@ -274,7 +274,7 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 次に、**オペレーター B** は開いている "record image" ウィンドウで **s** キーを押してデータの記録を開始し、再度 **s** キーを押して停止できます。必要に応じてこれを繰り返すことができます。
 
-> p.s. 記録されたデータはデフォルトで `avp_teleoperate/teleop/data` に保存されます。使用方法については、このリポジトリを参照してください: [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion)。
+> p.s. 記録されたデータはデフォルトで `avp_teleoperate/teleop/utils/data` に保存されます。使用方法については、このリポジトリを参照してください: [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion)。
 
 ## 3.4 🔚 終了
 

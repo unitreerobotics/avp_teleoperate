@@ -271,7 +271,7 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 接下来，**操作员 B** 可以在打开的“record image”窗口中按 **s** 键开始录制数据，再次按 **s** 键停止。可以根据需要重复此操作进行多次录制。
 
-> 注意：录制的数据默认存储在 `avp_teleoperate/teleop/data` 中，使用说明见此仓库： [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/blob/main/README_zh.md#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
+> 注意：录制的数据默认存储在 `avp_teleoperate/teleop/utils/data` 中，使用说明见此仓库： [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/blob/main/README_zh.md#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
 
 ## 3.4 🔚 退出
 
