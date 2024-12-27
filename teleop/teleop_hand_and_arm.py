@@ -242,11 +242,13 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("KeyboardInterrupt, exiting program...")
     finally:
+        arm_ctrl.ctrl_dual_arm_go_home()
         tv_img_shm.unlink()
         tv_img_shm.close()
         if WRIST:
             wrist_img_shm.unlink()
             wrist_img_shm.close()
-        recorder.close()
+        if args.record:
+            recorder.close()
         print("Finally, exiting program...")
         exit(0)

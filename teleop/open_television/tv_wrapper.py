@@ -72,9 +72,9 @@ class TeleVisionWrapper:
         # --------------------------------wrist-------------------------------------
 
         # TeleVision obtains a basis coordinate that is OpenXR Convention
-        head_vuer_mat = mat_update(const_head_vuer_mat, self.tv.head_matrix.copy())
-        left_wrist_vuer_mat  = mat_update(const_left_wrist_vuer_mat, self.tv.left_hand.copy())
-        right_wrist_vuer_mat = mat_update(const_right_wrist_vuer_mat, self.tv.right_hand.copy())
+        head_vuer_mat, head_flag = mat_update(const_head_vuer_mat, self.tv.head_matrix.copy())
+        left_wrist_vuer_mat, left_wrist_flag  = mat_update(const_left_wrist_vuer_mat, self.tv.left_hand.copy())
+        right_wrist_vuer_mat, right_wrist_flag = mat_update(const_right_wrist_vuer_mat, self.tv.right_hand.copy())
 
         # Change basis convention: VuerMat ((basis) OpenXR Convention) to WristMat ((basis) Robot Convention)
         # p.s. WristMat = T_{robot}_{openxr} * VuerMat * T_{robot}_{openxr}^T
@@ -94,8 +94,8 @@ class TeleVisionWrapper:
         # Change wrist convention: WristMat ((Left Wrist) XR/AppleVisionPro Convention) to UnitreeWristMat((Left Wrist URDF) Unitree Convention)
         # Reason for right multiply (T_to_unitree_left_wrist) : Rotate 90 degrees counterclockwise about its own x-axis.
         # Reason for right multiply (T_to_unitree_right_wrist): Rotate 90 degrees clockwise about its own x-axis.
-        unitree_left_wrist  = left_wrist_mat @ T_to_unitree_left_wrist
-        unitree_right_wrist = right_wrist_mat @ T_to_unitree_right_wrist
+        unitree_left_wrist = left_wrist_mat @ (T_to_unitree_left_wrist if left_wrist_flag else np.eye(4))
+        unitree_right_wrist = right_wrist_mat @ (T_to_unitree_right_wrist if right_wrist_flag else np.eye(4))
 
         # Transfer from WORLD to HEAD coordinate (translation only).
         unitree_left_wrist[0:3, 3]  = unitree_left_wrist[0:3, 3] - head_mat[0:3, 3]

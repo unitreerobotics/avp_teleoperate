@@ -180,6 +180,20 @@ class G1_29_ArmController:
     def get_current_dual_arm_dq(self):
         '''Return current state dq of the left and right arm motors.'''
         return np.array([self.lowstate_buffer.GetData().motor_state[id].dq for id in G1_29_JointArmIndex])
+    
+    def ctrl_dual_arm_go_home(self):
+        '''Move both the left and right arms of the robot to their home position by setting the target joint angles (q) and torques (tau) to zero.'''
+        print("[G1_29_ArmController] ctrl_dual_arm_go_home start...")
+        with self.ctrl_lock:
+            self.q_target = np.zeros(14)
+            self.tauff_target = np.zeros(14)
+        tolerance = 0.05  # Tolerance threshold for joint angles to determine "close to zero", can be adjusted based on your motor's precision requirements
+        while True:
+            current_q = self.get_current_dual_arm_q()
+            if np.all(np.abs(current_q) < tolerance):
+                print("[G1_29_ArmController] both arms have reached the home position.")
+                break
+            time.sleep(0.05)
 
     def speed_gradual_max(self, t = 5.0):
         '''Parameter t is the total time required for arms velocity to gradually increase to its maximum value, in seconds. The default is 5.0.'''
