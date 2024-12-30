@@ -98,16 +98,14 @@ if __name__ == '__main__':
     
     if args.record:
         recorder = EpisodeWriter(task_dir = args.task_dir, frequency = args.frequency, rerun_log = True)
+        recording = False
         
     try:
         user_input = input("Please enter the start signal (enter 'r' to start the subsequent program):\n")
         if user_input.lower() == 'r':
             arm_ctrl.speed_gradual_max()
-            if args.record:
-                press_key_s_count = 0
-            
+
             running = True
-            recording = False
             while running:
                 start_time = time.time()
                 head_rmat, left_wrist, right_wrist, left_hand, right_hand = tv_wrapper.get_data()
@@ -133,17 +131,12 @@ if __name__ == '__main__':
                 if key == ord('q'):
                     running = False
                 elif key == ord('s') and args.record:
-                    press_key_s_count += 1
-                    if press_key_s_count % 2 == 1:
-                        print("==> Start recording...")
-                        recording = True
-                        recorder.create_episode()
-                        print("==> Create episode ok.")
+                    recording = not recording # state flipping
+                    if recording:
+                        if not recorder.create_episode():
+                            recording = False
                     else:
-                        print("==> End recording...")
-                        recording = False
                         recorder.save_episode()
-                        print("==> Save episode ok.")
 
                 # record data
                 if args.record:
