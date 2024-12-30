@@ -186,7 +186,7 @@ class G1_29_ArmController:
         print("[G1_29_ArmController] ctrl_dual_arm_go_home start...")
         with self.ctrl_lock:
             self.q_target = np.zeros(14)
-            self.tauff_target = np.zeros(14)
+            # self.tauff_target = np.zeros(14)
         tolerance = 0.05  # Tolerance threshold for joint angles to determine "close to zero", can be adjusted based on your motor's precision requirements
         while True:
             current_q = self.get_current_dual_arm_q()
