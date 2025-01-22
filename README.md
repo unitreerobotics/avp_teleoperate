@@ -156,38 +156,15 @@ Copy the `rootCA.pem` via AirDrop to Apple Vision Pro and install it.
 
 Settings > General > About > Certificate Trust Settings. Under "Enable full trust for root certificates", turn on trust for the certificate.
 
+> In the new version of Vision OS 2, this step is different: After copying the certificate to the Apple Vision Pro device via AirDrop, a certificate-related information section will appear below the account bar in the top left corner of the Settings app. Tap it to enable trust for the certificate.
+
 Settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Features.
 
-## 2.3 🔎 Test environment
+## 2.3 🔎 Unit Test
 
 This step is to verify that the environment is installed correctly.
 
-1. Download Isaac Gym: https://developer.nvidia.com/isaac-gym/download
-
-    Extracting to the current directory, go to the `IsaacGym_Preview_4_Package/isaacgym/python` directory and execute the command:
-
-    ```bash
-    (tv) unitree@Host:~/IsaacGym_Preview_4_Package/isaacgym/python$ pip install -e .
-    ```
-
-2. After setup up streaming with local following the above instructions, you can try teleoperating two robot hands in Issac Gym:
-
-    ```bash
-    (tv) unitree@Host:~/avp_teleoperate$ cd teleop
-    (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_test_gym.py
-    ```
-
-3. Wear your Apple Vision Pro device.
-
-4. Open Safari on Apple Vision Pro and visit: https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
-
-    > p.s. This IP address should match the IP address of your **Host machine**.
-
-5. Click `Enter VR` and `Allow` to start the VR session.
-
-6. See your hands in 3D!
-
-
+comming soon.
 
 
 

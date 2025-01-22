@@ -102,7 +102,7 @@ class OpenCVCamera():
 class ImageServer:
     def __init__(self, config, port = 5555, Unit_Test = False):
         """
-        config:
+        config example1:
         {
             'fps':30                                                          # frame per second
             'head_camera_type': 'opencv',                                     # opencv or realsense
@@ -110,7 +110,30 @@ class ImageServer:
             'head_camera_id_numbers': [0],                                    # '/dev/video0' (opencv)
             'wrist_camera_type': 'realsense', 
             'wrist_camera_image_shape': [480, 640],                           # Wrist camera resolution  [height, width]
-            'wrist_camera_id_numbers': ["218622271789", "241222076627"],      # serial number (realsense)
+            'wrist_camera_id_numbers': ["218622271789", "241222076627"],      # realsense camera's serial number
+        }
+
+        config example2:
+        {
+            'fps':30                                                          # frame per second
+            'head_camera_type': 'realsense',                                  # opencv or realsense
+            'head_camera_image_shape': [480, 640],                            # Head camera resolution  [height, width]
+            'head_camera_id_numbers': ["218622271739"],                       # realsense camera's serial number
+            'wrist_camera_type': 'opencv', 
+            'wrist_camera_image_shape': [480, 640],                           # Wrist camera resolution  [height, width]
+            'wrist_camera_id_numbers': [0,1],                                 # '/dev/video0' and '/dev/video1' (opencv)
+        }
+
+        If you are not using the wrist camera, you can comment out its configuration, like this below:
+        config:
+        {
+            'fps':30                                                          # frame per second
+            'head_camera_type': 'opencv',                                     # opencv or realsense
+            'head_camera_image_shape': [480, 1280],                           # Head camera resolution  [height, width]
+            'head_camera_id_numbers': [0],                                    # '/dev/video0' (opencv)
+            #'wrist_camera_type': 'realsense', 
+            #'wrist_camera_image_shape': [480, 640],                           # Wrist camera resolution  [height, width]
+            #'wrist_camera_id_numbers': ["218622271789", "241222076627"],      # serial number (realsense)
         }
         """
         print(config)

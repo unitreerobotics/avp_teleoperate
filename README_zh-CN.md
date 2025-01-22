@@ -159,36 +159,13 @@ unitree@Host:~$ conda activate tv
 
 设置 > 应用 > Safari > 高级 > 功能标志 > 启用 WebXR 相关功能。
 
-## 2.3 🔎 测试环境
+> 提醒：在新版本 Vision OS 2 系统中，该步骤有所不同：将证书通过 AirDrop 复制到 Apple Vision Pro 设备后，将会在设置 APP 中左上角账户栏的下方出现证书相关信息栏，点击进去即可启用对该证书的信任。
+
+## 2.3 🔎 单元测试
 
 此步骤用于验证环境是否正确安装。
 
-1. 下载 Isaac Gym：https://developer.nvidia.com/isaac-gym/download
-
-   解压到当前目录，进入 `IsaacGym_Preview_4_Package/isaacgym/python` 目录，执行命令：
-
-   ```bash
-   (tv) unitree@Host:~/IsaacGym_Preview_4_Package/isaacgym/python$ pip install -e .
-   ```
-
-2. 按照上述说明设置本地流媒体后，您可以尝试在 Isaac Gym 中远程操作两个机器人手：
-
-   ```bash
-   (tv) unitree@Host:~/avp_teleoperate$ cd teleop
-   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_test_gym.py
-   ```
-
-3. 戴上您的 Apple Vision Pro 设备。
-
-4. 在 Apple Vision Pro 上打开 Safari，访问：https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
-
-   > 提醒：此 IP 地址应与您的 **主机** IP 地址匹配。
-
-5. 点击 `Enter VR` 并选择 `Allow` 以启动 VR 会话。
-
-6. 在 3D 中看到您的手！
-
-
+即将展现。
 
 
 
