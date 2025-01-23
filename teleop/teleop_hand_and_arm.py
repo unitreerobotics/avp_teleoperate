@@ -123,8 +123,9 @@ if __name__ == '__main__':
                 head_rmat, left_wrist, right_wrist, left_hand, right_hand = tv_wrapper.get_data()
 
                 # send hand skeleton data to hand_ctrl.control_process
-                left_hand_array[:] = left_hand.flatten()
-                right_hand_array[:] = right_hand.flatten()
+                if args.hand:
+                    left_hand_array[:] = left_hand.flatten()
+                    right_hand_array[:] = right_hand.flatten()
 
                 # get current state data.
                 current_lr_arm_q  = arm_ctrl.get_current_dual_arm_q()

@@ -309,12 +309,12 @@ class H1_2_ArmController:
         self.q_target = np.zeros(14)
         self.tauff_target = np.zeros(14)
 
-        self.kp_high = 200.0
+        self.kp_high = 300.0
         self.kd_high = 5.0
         self.kp_low = 140.0
-        self.kd_low = 7.5
-        self.kp_wrist = 40.0
-        self.kd_wrist = 6.0
+        self.kd_low = 3.0
+        self.kp_wrist = 50.0
+        self.kd_wrist = 2.0
 
         self.all_motor_q = None
         self.arm_velocity_limit = 20.0
@@ -408,7 +408,7 @@ class H1_2_ArmController:
 
             cliped_arm_q_target = self.clip_arm_q_target(arm_q_target, velocity_limit = self.arm_velocity_limit)
 
-            for idx, id in enumerate(G1_29_JointArmIndex):
+            for idx, id in enumerate(H1_2_JointArmIndex):
                 self.msg.motor_cmd[id].q = cliped_arm_q_target[idx]
                 self.msg.motor_cmd[id].dq = 0
                 self.msg.motor_cmd[id].tau = arm_tauff_target[idx]      
