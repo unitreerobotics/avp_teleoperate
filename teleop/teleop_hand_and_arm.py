@@ -154,7 +154,7 @@ if __name__ == '__main__':
                 # record data
                 if args.record:
                     # dex hand or gripper
-                    if args.dex:
+                    if args.hand == "dex3":
                         with dual_hand_data_lock:
                             left_hand_state = dual_hand_state_array[:7]
                             right_hand_state = dual_hand_state_array[-7:]
