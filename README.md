@@ -31,7 +31,7 @@ Here are the robots that will be supported,
   <tr>
     <td style="text-align: center;"> G1 (29DoF) + Dex3-1 </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;">  </td>
+    <td style="text-align: center;"> main branch </td>
   </tr>
   <tr>
     <td style="text-align: center;"> H1 (Arm 4DoF) </td>
@@ -41,7 +41,7 @@ Here are the robots that will be supported,
   <tr>
     <td style="text-align: center;"> H1_2 (Arm 7DoF) + Inspire </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1_2" target="_blank">Refer to this branch</a> </td>
+    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/main" target="_blank">The original h1_2 branch has become stale, and the original g1 branch has been renamed to the main branch. The main branch now supports both g1 and h1_2.</a> </td>
   </tr>
   <tr>
     <td style="text-align: center;"> ··· </td>
@@ -49,6 +49,7 @@ Here are the robots that will be supported,
     <td style="text-align: center;"> ··· </td>
   </tr>
 </table>
+
 
 
 Here are the required devices and wiring diagram,
@@ -99,6 +100,8 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 (tv) unitree@Host:~$ cd unitree_sdk2_python
 (tv) unitree@Host:~$ pip install -e .
 ```
+
+> p.s. The [unitree_dds_wrapper](https://github.com/unitreerobotics/unitree_dds_wrapper) in the original h1_2 branch was a temporary version. It has now been fully migrated to the official Python-based control and communication library: [unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python).
 
 
 
@@ -179,13 +182,20 @@ Copy `image_server.py` in the `avp_teleoperate/teleop/image_server` directory to
 
 ```bash
 # p.s.1 You can transfer image_server.py to PC2 via the scp command and then use ssh to remotely login to PC2 to execute it.
-# p.s.2 The image transfer program is currently configured for binocular rgb cameras.
+# Assuming the IP address of the development computing unit PC2 is 192.168.123.164, the transmission process is as follows:
+# log in to PC2 via SSH and create the folder for the image server
+(tv) unitree@Host:~$ ssh unitree@192.168.123.164 "mkdir -p ~/image_server"
+# Copy the local image_server.py to the ~/image_server directory on PC2
+(tv) unitree@Host:~$ scp ~/avp_teleoperate/teleop/image_server/image_server.py unitree@192.168.123.164:~/image_server/
 
+
+# p.s.2 Currently, this image transmission program supports two methods for reading images: OpenCV and Realsense SDK. Please refer to the comments in the `ImageServer` class within `image_server.py` to configure your image transmission service according to your camera hardware.
 # Now located in Unitree Robot PC2 terminal
 unitree@PC2:~/image_server$ python image_server.py
 # You can see the terminal output as follows:
-# Image server has started, waiting for client connections...
-# Image Resolution: width is 640, height is 480
+# {'fps': 30, 'head_camera_type': 'opencv', 'head_camera_image_shape': [480, 1280], 'head_camera_id_numbers': [0]}
+# [Image Server] Head camera 0 resolution: 480.0 x 1280.0
+# [Image Server] Image server has started, waiting for client connections...
 ```
 
 After image service is started, you can use `image_client.py` **in the Host** terminal to test whether the communication is successful:
@@ -196,7 +206,7 @@ After image service is started, you can use `image_client.py` **in the Host** te
 
 ## 3.2 ✋ Inspire hands Server (optional)
 
-> Note: If the selected robot configuration does not use the Inspire dexterous hand, please ignore this section.
+> Note: If the selected robot configuration does not use the Inspire dexterous hand (Gen1), please ignore this section.
 
 You can refer to [Dexterous Hand Development](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) to configure related environments and compile control programs. First, use [this URL](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) to download the dexterous hand control interface program. Copy it to **PC2** of  Unitree robots. 
 
@@ -229,13 +239,33 @@ If two hands open and close continuously, it indicates success. Once successful,
 
 It's best to have two operators to run this program, referred to as **Operator A** and **Operator B**.
 
-Now, **Operator B** execute the following command on **Host machine** :
 
-```bash
-(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
-```
 
-And then, **Operator A**
+First, **Operator B** needs to perform the following steps:
+
+1. Modify the `img_config` image client configuration under the `if __name__ == '__main__':` section in `~/avp_teleoperate/teleop/teleop_hand_and_arm.py`. It should match the image server parameters you configured on PC2 in Section 3.1.
+
+2. Choose different launch parameters based on your robot configuration
+
+   ```bash
+   # 1. G1 (29DoF) Robot + Dex3-1 Dexterous Hand (Note: G1_29 is the default value for --arm, so it can be omitted)
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=G1_29 --hand=dex3
+   
+   # 2. G1 (29DoF) Robot only
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py
+   
+   # 3. H1_2 Robot (Note: The first-generation Inspire Dexterous Hand is currently only supported in the H1_2 branch. Support for the Main branch will be added later.)
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1_2
+   
+   # 4. If you want to enable data visualization + recording, you can add the --record option
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
+   ```
+
+3. If the program starts successfully, the terminal will pause at the final line displaying the message: "Please enter the start signal (enter 'r' to start the subsequent program):"
+
+
+
+And then, **Operator A** needs to perform the following steps:
 
 1. Wear your Apple Vision Pro device.
 
@@ -245,13 +275,19 @@ And then, **Operator A**
 
 3. Click `Enter VR` and `Allow` to start the VR session.
 
-When host terminal outputs "Please enter the start signal (enter 'r' to start the subsequent program):", **Operator B** can start teleoperation program by pressing the **r** key in the terminal.
+4. You will see the robot's first-person perspective in the Apple Vision Pro.
 
-At this time, **Operator A** can remotely control the robot's arms and dexterous hands.
 
-Next, **Operator B** can press **s** key to begin recording data in the 'record image' window that opens, and press **s** again to stop. This can be repeated as necessary.
 
-> p.s. Recorded data is stored in `avp_teleoperate/teleop/utils/data` by default, with usage instructions at this repo:  [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion).
+Next, **Operator B** can start teleoperation program by pressing the **r** key in the terminal.
+
+At this time, **Operator A** can remotely control the robot's arms (and dexterous hands).
+
+If the `--record` parameter is used, **Operator B** can press **s** key in the opened "record image" window to start recording data, and press **s** again to stop. This operation can be repeated as needed for multiple recordings.
+
+> p.s.1 Recorded data is stored in `avp_teleoperate/teleop/utils/data` by default, with usage instructions at this repo:  [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion).
+>
+> p.s.2 Please pay attention to your disk space size during data recording.
 
 ## 3.4 🔚 Exit
 
@@ -291,7 +327,6 @@ avp_teleoperate/
 │   │      ├── weighted_moving_filter.py  [For filtering joint data]
 │   │
 │   │──teleop_hand_and_arm.py   [Startup execution code for teleoperation]
-|   |——teleop_test_gym.py       [Can be used to verify that the environment is installed correctly]
 ```
 
 
@@ -391,3 +426,4 @@ This code builds upon following open-source code-bases. Please visit the URLs to
 9) https://github.com/tonyzhaozh/act
 10) https://github.com/facebookresearch/detr
 11) https://github.com/Dingry/BunnyVisionPro
+12) https://github.com/unitreerobotics/unitree_sdk2_python

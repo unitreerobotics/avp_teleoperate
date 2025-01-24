@@ -30,7 +30,7 @@
   <tr>
     <td style="text-align: center;"> G1 (29自由度) + Dex3-1 </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
-    <th style="text-align: center;"> </th>
+    <th style="text-align: center;">main分支</th>
   </tr>
   <tr>
     <td style="text-align: center;"> H1 (手臂4自由度) </td>
@@ -40,7 +40,7 @@
   <tr>
     <td style="text-align: center;"> H1_2 (手臂7自由度) + Inspire </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
-    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1_2" target="_blank">可参考该分支</a>  </th>
+    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/main" target="_blank">原h1_2分支变为陈旧分支，原g1分支重命名为main分支，main分支现已同时支持g1和h1_2</a>  </th>
   </tr>
   <tr>
     <td style="text-align: center;"> ··· </td>
@@ -48,6 +48,7 @@
     <th style="text-align: center;"> ··· </th>
   </tr>
 </table>
+
 
 
 以下是需要的设备和接线示意图：
@@ -100,6 +101,8 @@ unitree@Host:~$ conda activate tv
 (tv) unitree@Host:~$ cd unitree_sdk2_python
 (tv) unitree@Host:~$ pip install -e .
 ```
+
+> 提醒：原 h1_2 分支中的 [unitree_dds_wrapper](https://github.com/unitreerobotics/unitree_dds_wrapper) 为临时版本，现已全面转换到上述正式的 Python 版控制通信库：[unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python)
 
 
 
@@ -179,13 +182,19 @@ unitree@Host:~$ conda activate tv
 
 ```bash
 # 提醒1：可以通过scp命令将image_server.py传输到PC2，然后使用ssh远程登录PC2后执行它。
-# 提醒2：目前该图像传输程序是为双目RGB相机配置的。
+# 假设开发计算单元PC2的ip地址为192.168.123.164，那么传输过程示例如下：
+# 先ssh登录PC2，创建图像服务器的文件夹
+(tv) unitree@Host:~$ ssh unitree@192.168.123.164 "mkdir -p ~/image_server"
+# 将本地的image_server.py拷贝至PC2的~/image_server目录下
+(tv) unitree@Host:~$ scp ~/avp_teleoperate/teleop/image_server/image_server.py unitree@192.168.123.164:~/image_server/
 
+# 提醒2：目前该图像传输程序支持OpenCV和Realsense SDK两种读取图像的方式，请阅读image_server.py的ImageServer类的注释以便您根据自己的相机硬件来配置自己的图像传输服务。
 # 现在位于宇树机器人 PC2 终端
 unitree@PC2:~/image_server$ python image_server.py
 # 您可以看到终端输出如下：
-# Image server has started, waiting for client connections...
-# Image Resolution: width is 640, height is 480
+# {'fps': 30, 'head_camera_type': 'opencv', 'head_camera_image_shape': [480, 1280], 'head_camera_id_numbers': [0]}
+# [Image Server] Head camera 0 resolution: 480.0 x 1280.0
+# [Image Server] Image server has started, waiting for client connections...
 ```
 
 在图像服务启动后，您可以在 **主机** 终端上使用 `image_client.py` 测试通信是否成功：
@@ -196,7 +205,7 @@ unitree@PC2:~/image_server$ python image_server.py
 
 ## 3.2 ✋ Inspire 手部服务器（可选）
 
-> 注意：如果选择的机器人配置中没有使用 Inspire 灵巧手，那么请忽略本节内容。
+> 注意：如果选择的机器人配置中没有使用一代 Inspire 灵巧手，那么请忽略本节内容。
 
 您可以参考 [灵巧手开发](https://support.unitree.com/home/zh/H1_developer/Dexterous_hand) 配置相关环境并编译控制程序。首先，使用 [此链接](https://oss-global-cdn.unitree.com/static/0a8335f7498548d28412c31ea047d4be.zip) 下载灵巧手控制接口程序，然后将其复制到宇树机器人的**PC2**。
 
@@ -226,13 +235,33 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 最好有两名操作员来运行此程序，称为 **操作员 A** 和 **操作员 B**。
 
-现在，**操作员 B** 在 **主机** 上执行以下命令：
 
-```bash
-(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
-```
 
-然后，**操作员 A**：
+首先，**操作员 B** 需要执行以下步骤：
+
+1. 修改  `~/avp_teleoperate/teleop/teleop_hand_and_arm.py` 中 `if __name__ == '__main__':` 代码下方的 `img_config` 图像客户端配置，它应该与 3.1 节中您在 PC2 配置的图像服务器参数相同。
+
+2. 根据您的机器人配置选择不同的启动参数
+
+   ```bash
+   # 1. G1(29DoF)机器人 + Dex3-1 灵巧手 （实际上，G1_29是--arm的默认参数，可以选择不填写）
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=G1_29 --hand=dex3
+   
+   # 2. 仅G1(29DoF)机器人
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py
+   
+   # 3. H1_2机器人，（一代Inspire灵巧手暂时只在 H1_2 分支支持，Main分支将后续更新）
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1_2
+   
+   # 4. 如果您想开启数据可视化+录制，还可以追加 --record 选项
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
+   ```
+
+3. 程序如果正常启动，终端最后一行将停留在 “Please enter the start signal (enter 'r' to start the subsequent program):” 的字符串输出。
+
+
+
+然后，**操作员 A** 需要执行以下步骤：
 
 1. 戴上您的 Apple Vision Pro 设备。
 
@@ -242,13 +271,19 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 3. 点击 `Enter VR` 并选择 `Allow` 以启动 VR 会话。
 
-当主机终端输出“Please enter the start signal (enter 'r' to start the subsequent program):”时，**操作员 B** 可以在终端中按下 **r** 键以启动远程操作程序。
+4. 您将会在Apple Vision Pro中看到机器人的第一人称视野。
 
-此时，**操作员 A** 可以远程控制机器人的手臂和灵巧手。
 
-接下来，**操作员 B** 可以在打开的“record image”窗口中按 **s** 键开始录制数据，再次按 **s** 键停止。可以根据需要重复此操作进行多次录制。
 
-> 注意：录制的数据默认存储在 `avp_teleoperate/teleop/utils/data` 中，使用说明见此仓库： [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/blob/main/README_zh.md#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
+接下来，**操作员 B** 可以在终端中按下 **r** 键以启动远程操作程序。
+
+此时，**操作员 A** 可以远程控制机器人的手臂（和灵巧手）。
+
+如果使用了`--record`参数，那么**操作员 B** 可以在打开的“record image”窗口中按 **s** 键开始录制数据，再次按 **s** 键停止。可以根据需要重复此操作进行多次录制。
+
+> 注意1：录制的数据默认存储在 `avp_teleoperate/teleop/utils/data` 中，使用说明见此仓库： [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/blob/main/README_zh.md#%E6%95%B0%E6%8D%AE%E9%87%87%E9%9B%86%E4%B8%8E%E8%BD%AC%E6%8D%A2)。
+>
+> 注意2：请在录制数据时注意您的硬盘空间大小。
 
 ## 3.4 🔚 退出
 
@@ -288,7 +323,6 @@ avp_teleoperate/
 │   │      ├── weighted_moving_filter.py  [用于过滤关节数据的滤波器]
 │   │
 │   │──teleop_hand_and_arm.py    [遥操作的启动执行代码]
-|   |——teleop_test_gym.py        [可用于验证环境是否正确安装]
 ```
 
 
@@ -389,3 +423,4 @@ avp_teleoperate/
 9. https://github.com/tonyzhaozh/act
 10. https://github.com/facebookresearch/detr
 11. https://github.com/Dingry/BunnyVisionPro
+12. https://github.com/unitreerobotics/unitree_sdk2_python

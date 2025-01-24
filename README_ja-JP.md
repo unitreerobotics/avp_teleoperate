@@ -20,38 +20,16 @@
 # 0. 📖 イントロダクション
 このリポジトリは、**Apple Vision Pro** を使用して **Unitree ヒューマノイドロボット** を遠隔操作するためのものです。
 
-サポートされるロボットは以下の通りです。
+以下は、このリポジトリがサポートするロボットの種類です：
 
-<table>
-  <tr>
-    <th style="text-align: center;"> &#129302; ロボット </th>
-    <th style="text-align: center;"> &#9898; ステータス </th>
-    <th style="text-align: center;"> &#128221; 備考 </th>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> G1 (29DoF) + Dex3-1 </td>
-    <td style="text-align: center;"> &#9989; 完了 </td>
-    <td style="text-align: center;">  </td>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> H1 (アーム 4DoF) </td>
-    <td style="text-align: center;"> &#9201; 進行中 </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">このブランチのikを一時的に参照</a> </td>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> H1_2 (アーム 7DoF) + Inspire </td>
-    <td style="text-align: center;"> &#9989; 完了 </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1_2" target="_blank">このブランチを参照</a> </td>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> ··· </td>
-    <td style="text-align: center;"> ··· </td>
-    <td style="text-align: center;"> ··· </td>
-  </tr>
-</table>
+|            ロボット            | ステータス |                             備考                             |
+| :----------------------------: | :--------: | :----------------------------------------------------------: |
+|     G1 (29自由度) + Dex3-1     |   ✅ 完了   |                         mainブランチ                         |
+|       H1 (アーム4自由度)       |  ⏳ 進行中  | [この一時ブランチのIKソルバーを参照](https://github.com/unitreerobotics/avp_teleoperate/tree/h1) |
+| H1_2 (アーム7自由度) + Inspire |   ✅ 完了   | [元のh1_2ブランチは古くなり、元のg1ブランチがmainブランチに改名され、mainブランチは現在g1とh1_2の両方をサポート](https://github.com/unitreerobotics/avp_teleoperate/tree/main) |
+|              ...               |    ...     |                             ...                              |
 
-
-必要なデバイスと配線図は以下の通りです。
+以下は、必要なデバイスと配線図です：
 
 <p align="center">
   <a href="https://oss-global-cdn.unitree.com/static/e0ca680eda164e31bd0ff6f8fb50604c_5050x2590.png">
@@ -78,7 +56,7 @@ unitree@Host:~$ conda activate tv
 (tv) unitree@Host:~$ pip install casadi
 ```
 
-> p.s. コマンドの前にあるすべての識別子は、**どのデバイスとディレクトリでコマンドを実行するべきか**を示すためのものです。
+> 注意：コマンドの前にあるすべての識別子は、**どのデバイスとディレクトリでコマンドを実行するべきか**を示すためのものです。
 >
 Ubuntu システムの `~/.bashrc` ファイルでは、デフォルトの設定は次の通りです: `PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '`
 >
@@ -99,6 +77,8 @@ Ubuntu システムの `~/.bashrc` ファイルでは、デフォルトの設定
 (tv) unitree@Host:~$ cd unitree_sdk2_python
 (tv) unitree@Host:~$ pip install -e .
 ```
+
+> 注意：元の h1_2 ブランチの [unitree_dds_wrapper](https://github.com/unitreerobotics/unitree_dds_wrapper) は一時的なバージョンであり、現在は公式の Python 版制御通信ライブラリ [unitree_sdk2_python](https://github.com/unitreerobotics/unitree_sdk2_python) に完全に移行されています。
 
 
 
@@ -158,34 +138,13 @@ Ubuntu システムの `~/.bashrc` ファイルでは、デフォルトの設定
 
 設定 > アプリ > Safari > 高度な設定 > 機能フラグ > WebXR 関連機能を有効にします。
 
-## 2.3 🔎 テスト環境
+> 注意：新しい Vision OS 2 システムでは、この手順が異なります。証明書を AirDrop 経由で Apple Vision Pro デバイスにコピーした後、設定アプリの左上のアカウント欄の下に証明書関連情報欄が表示されます。それをクリックして、証明書の信頼を有効にします。
+
+## 2.3 🔎 ユニットテスト
 
 このステップは、環境が正しくインストールされているかを確認するためのものです。
 
-1. Isaac Gym をダウンロードします: https://developer.nvidia.com/isaac-gym/download
-
-    現在のディレクトリに解凍し、`IsaacGym_Preview_4_Package/isaacgym/python` ディレクトリに移動して、次のコマンドを実行します:
-
-    ```bash
-    (tv) unitree@Host:~/IsaacGym_Preview_4_Package/isaacgym/python$ pip install -e .
-    ```
-
-2. 上記の手順に従ってローカルでストリーミングを設定した後、Isaac Gym で 2 つのロボットハンドを遠隔操作してみてください:
-
-    ```bash
-    (tv) unitree@Host:~/avp_teleoperate$ cd teleop
-    (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_test_gym.py
-    ```
-
-3. Apple Vision Pro デバイスを装着します。
-
-4. Apple Vision Pro で Safari を開き、次の URL にアクセスします: https://192.168.123.2:8012?ws=wss://192.168.123.2:8012
-
-    > p.s. この IP アドレスは **ホストマシン** の IP アドレスと一致する必要があります。
-
-5. `Enter VR` をクリックし、`Allow` を選択して VR セッションを開始します。
-
-6. 3D で手を確認します！
+近日公開。
 
 
 
@@ -201,14 +160,20 @@ Ubuntu システムの `~/.bashrc` ファイルでは、デフォルトの設定
 `avp_teleoperate/teleop/image_server` ディレクトリにある `image_server.py` を Unitree ロボット (G1/H1/H1_2 など) の **開発用コンピューティングユニット PC2** にコピーし、**PC2** で次のコマンドを実行します:
 
 ```bash
-# p.s.1 scp コマンドを使用して image_server.py を PC2 に転送し、ssh を使用して PC2 にリモートログインして実行できます。
-# p.s.2 画像転送プログラムは現在、双眼 RGB カメラ用に設定されています。
+# 注意1：scp コマンドを使用して image_server.py を PC2 に転送し、ssh を使用して PC2 にリモートログインして実行できます。
+# 開発用コンピューティングユニット PC2 の IP アドレスが 192.168.123.164 であると仮定すると、転送プロセスは以下のようになります：
+# まず ssh で PC2 にログインし、画像サーバーのフォルダを作成します
+(tv) unitree@Host:~$ ssh unitree@192.168.123.164 "mkdir -p ~/image_server"
+# ローカルの image_server.py を PC2 の ~/image_server ディレクトリにコピーします
+(tv) unitree@Host:~$ scp ~/avp_teleoperate/teleop/image_server/image_server.py unitree@192.168.123.164:~/image_server/
 
+# 注意2：現在、この画像転送プログラムは OpenCV と Realsense SDK の 2 つの画像読み取り方法をサポートしています。image_server.py の ImageServer クラスのコメントを読んで、カメラハードウェアに応じて画像転送サービスを設定してください。
 # 現在、Unitree ロボット PC2 端末にいます
 unitree@PC2:~/image_server$ python image_server.py
-# 端末に次のように出力されます:
-# Image server has started, waiting for client connections...
-# Image Resolution: width is 640, height is 480
+# 端末に次のように出力されます：
+# {'fps': 30, 'head_camera_type': 'opencv', 'head_camera_image_shape': [480, 1280], 'head_camera_id_numbers': [0]}
+# [Image Server] Head camera 0 resolution: 480.0 x 1280.0
+# [Image Server] Image server has started, waiting for client connections...
 ```
 
 画像サービスが開始された後、**ホスト** 端末で `image_client.py` を使用して通信が成功したかどうかをテストできます:
@@ -252,13 +217,32 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 このプログラムを実行するには、**オペレーター A** と **オペレーター B** と呼ばれる 2 人のオペレーターがいるのが最適です。
 
-今、**オペレーター B** は **ホストマシン** で次のコマンドを実行します:
+
+
+まず、**オペレーター B** は次の手順を実行する必要があります：
+
+1. `~/avp_teleoperate/teleop/teleop_hand_and_arm.py` の `if __name__ == '__main__':` コードの下にある `img_config` 画像クライアント設定を変更します。これは、3.1 節で PC2 に設定した画像サーバーパラメータと同じである必要があります。
+2. ロボット構成に応じて異なる起動パラメータを選択します
 
 ```bash
+# 1. G1(29自由度) ロボット + Dex3-1 デクスタラスハンド（実際には、G1_29 は --arm のデフォルトパラメータなので、省略可能）
+(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=G1_29 --hand=dex3
+
+# 2. G1(29自由度) ロボットのみ
+(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py
+
+# 3. H1_2 ロボット（Inspire デクスタラスハンドは一時的に H1_2 ブランチでのみサポートされ、Main ブランチは後で更新されます）
+(tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1_2
+
+# 4. データの可視化と記録を有効にする場合は、--record オプションを追加します
 (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
 ```
 
-そして、**オペレーター A** は
+3. プログラムが正常に起動すると、端末の最後の行に "Please enter the start signal (enter 'r' to start the subsequent program):" というメッセージが表示されます。
+
+
+
+次に、**オペレーター A** は次の手順を実行します：
 
 1. Apple Vision Pro デバイスを装着します。
 
@@ -268,13 +252,19 @@ unitree@PC2:~/h1_inspire_service/build$ ./h1_hand_example
 
 3. `Enter VR` をクリックし、`Allow` を選択して VR セッションを開始します。
 
-ホスト端末が "Please enter the start signal (enter 'r' to start the subsequent program):" と出力したら、**オペレーター B** は端末で **r** キーを押して遠隔操作プログラムを開始できます。
+4. Apple Vision Pro でロボットの一人称視点が表示されます。
 
-この時点で、**オペレーター A** はロボットのアームとデクスタラスハンドを遠隔操作できます。
 
-次に、**オペレーター B** は開いている "record image" ウィンドウで **s** キーを押してデータの記録を開始し、再度 **s** キーを押して停止できます。必要に応じてこれを繰り返すことができます。
 
-> p.s. 記録されたデータはデフォルトで `avp_teleoperate/teleop/utils/data` に保存されます。使用方法については、このリポジトリを参照してください: [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion)。
+次に、**オペレーター B** は端末で **r** キーを押して遠隔操作プログラムを開始します。
+
+この時点で、**オペレーター A** はロボットのアーム（およびデクスタラスハンド）を遠隔操作できます。
+
+`--record` パラメータを使用した場合、**オペレーター B** は開いている "record image" ウィンドウで **s** キーを押してデータの記録を開始し、再度 **s** キーを押して停止できます。必要に応じてこれを繰り返すことができます。
+
+> 注意1：記録されたデータはデフォルトで `avp_teleoperate/teleop/utils/data` に保存されます。使用方法については、このリポジトリを参照してください: [unitree_IL_lerobot](https://github.com/unitreerobotics/unitree_IL_lerobot/tree/main?tab=readme-ov-file#data-collection-and-conversion)。
+>
+> 注意2：データ記録時にはディスク容量に注意してください。
 
 ## 3.4 🔚 終了
 
@@ -314,7 +304,6 @@ avp_teleoperate/
 │   │      ├── weighted_moving_filter.py  [ジョイントデータをフィルタリングするため]
 │   │
 │   │──teleop_hand_and_arm.py   [遠隔操作の起動実行コード]
-|   |——teleop_test_gym.py       [環境が正しくインストールされているかを確認するために使用できます]
 ```
 
 
@@ -414,3 +403,4 @@ avp_teleoperate/
 9) https://github.com/tonyzhaozh/act
 10) https://github.com/facebookresearch/detr
 11) https://github.com/Dingry/BunnyVisionPro
+12) https://github.com/unitreerobotics/unitree_sdk2_python

@@ -3,7 +3,6 @@ aiohttp_cors==0.7.0
 aiortc==1.8.0
 av==11.0.0
 dex_retargeting==0.1.1
-dynamixel_sdk==3.7.31
 einops==0.8.0
 h5py==3.11.0
 ipython==8.12.3
@@ -22,6 +21,5 @@ seaborn==0.13.2
 setuptools==69.5.1
 torch==2.3.0
 torchvision==0.18.0
-tqdm==4.66.4
 vuer==0.0.32rc7
-wandb==0.17.3
+rerun-sdk==0.20.1
