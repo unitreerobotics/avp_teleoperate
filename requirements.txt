@@ -2,7 +2,6 @@ aiohttp==3.9.5
 aiohttp_cors==0.7.0
 aiortc==1.8.0
 av==11.0.0
-dex_retargeting==0.1.1
 einops==0.8.0
 h5py==3.11.0
 ipython==8.12.3

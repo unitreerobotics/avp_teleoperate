@@ -185,8 +185,9 @@ class Dex3_1_Controller:
                     ref_right_value[0] = ref_right_value[0] * 1.15
                     ref_right_value[1] = ref_right_value[1] * 1.05
                     ref_right_value[2] = ref_right_value[2] * 0.95
-                    left_q_target  = self.hand_retargeting.left_retargeting.retarget(ref_left_value)[[0,1,2,3,4,5,6]]
-                    right_q_target = self.hand_retargeting.right_retargeting.retarget(ref_right_value)[[0,1,2,3,4,5,6]]
+
+                    left_q_target  = self.hand_retargeting.left_retargeting.retarget(ref_left_value)[self.hand_retargeting.right_dex_retargeting_to_hardware]
+                    right_q_target = self.hand_retargeting.right_retargeting.retarget(ref_right_value)[self.hand_retargeting.right_dex_retargeting_to_hardware]
 
                 # get dual hand action
                 action_data = np.concatenate((left_q_target, right_q_target))    
