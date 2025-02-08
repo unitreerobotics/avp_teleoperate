@@ -22,3 +22,6 @@ torch==2.3.0
 torchvision==0.18.0
 vuer==0.0.32rc7
 rerun-sdk==0.20.1
+nlopt>=2.6.1,<2.8.0
+trimesh>=4.4.0
+anytree>=2.12.0
