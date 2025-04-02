@@ -34,6 +34,11 @@ Here are the robots that will be supported,
     <td style="text-align: center;"> main branch </td>
   </tr>
   <tr>
+    <td style="text-align: center;"> G1 (23DoF) </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+    <td style="text-align: center;"> main branch </td>
+  </tr>
+  <tr>
     <td style="text-align: center;"> H1 (Arm 4DoF) </td>
     <td style="text-align: center;"> &#9201; In Progress </td>
     <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">Refer to this branch's ik temporarily</a> </td>

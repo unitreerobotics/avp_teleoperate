@@ -12,8 +12,8 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from teleop.open_television.tv_wrapper import TeleVisionWrapper
-from teleop.robot_control.robot_arm import G1_29_ArmController, H1_2_ArmController
-from teleop.robot_control.robot_arm_ik import G1_29_ArmIK, H1_2_ArmIK
+from teleop.robot_control.robot_arm import G1_29_ArmController, G1_23_ArmController, H1_2_ArmController
+from teleop.robot_control.robot_arm_ik import G1_29_ArmIK, G1_23_ArmIK, H1_2_ArmIK
 from teleop.robot_control.robot_hand_unitree import Dex3_1_Controller, Gripper_Controller
 from teleop.image_server.image_client import ImageClient
 from teleop.utils.episode_writer import EpisodeWriter
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--no-record', dest = 'record', action = 'store_false', help = 'Do not save data')
     parser.set_defaults(record = False)
 
-    parser.add_argument('--arm', type=str, choices=['G1_29', 'H1_2'], default='G1_29', help='Select arm controller')
+    parser.add_argument('--arm', type=str, choices=['G1_29', 'G1_23', 'H1_2'], default='G1_29', help='Select arm controller')
 
     parser.add_argument('--hand', type=str, choices=['dex3', 'gripper', 'inspire1'], help='Select hand controller')
 
@@ -83,6 +83,9 @@ if __name__ == '__main__':
     if args.arm == 'G1_29':
         arm_ctrl = G1_29_ArmController()
         arm_ik = G1_29_ArmIK()
+    elif args.arm == 'G1_23':
+        arm_ctrl = G1_23_ArmController()
+        arm_ik = G1_23_ArmIK()
     elif args.arm == 'H1_2':
         arm_ctrl = H1_2_ArmController()
         arm_ik = H1_2_ArmIK()
@@ -160,12 +163,18 @@ if __name__ == '__main__':
                             right_hand_state = dual_hand_state_array[-7:]
                             left_hand_action = dual_hand_action_array[:7]
                             right_hand_action = dual_hand_action_array[-7:]
-                    else:
+                    elif args.hand == "gripper":
                         with dual_gripper_data_lock:
                             left_hand_state = [dual_gripper_state_array[1]]
                             right_hand_state = [dual_gripper_state_array[0]]
                             left_hand_action = [dual_gripper_action_array[1]]
                             right_hand_action = [dual_gripper_action_array[0]]
+                    elif args.hand == "inspire1":
+                        print("Inspire1_Controller comming soon.")
+                        pass
+                    else:
+                        print("No dexterous hand set.")
+                        pass
                     # head image
                     current_tv_image = tv_img_array.copy()
                     # wrist image
