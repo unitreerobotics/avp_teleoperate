@@ -4,17 +4,19 @@ left:
   wrist_link_name: "L_hand_base_link"
 
   # Target refers to the retargeting target, which is the robot hand
-  target_joint_names: null
-  target_origin_link_names: [ "L_hand_base_link", "L_hand_base_link", "L_hand_base_link", "L_hand_base_link", "L_hand_base_link" ]
+  target_joint_names: ['L_thumb_proximal_yaw_joint', 'L_thumb_proximal_pitch_joint',
+                       'L_index_proximal_joint', 'L_middle_proximal_joint', 
+                       'L_ring_proximal_joint', 'L_pinky_proximal_joint' ]
+  target_origin_link_names: [ "L_hand_base_link", "L_hand_base_link", "L_hand_base_link", "L_hand_base_link", "L_hand_base_link"]
   target_task_link_names: [ "L_thumb_tip", "L_index_tip", "L_middle_tip", "L_ring_tip", "L_pinky_tip" ]
-  scaling_factor: 1.5
+  scaling_factor: 1.20
 
   # Source refers to the retargeting input, which usually corresponds to the human hand
   # The joint indices of human hand joint which corresponds to each link in the target_link_names
   target_link_human_indices: [ [ 0, 0, 0, 0, 0 ], [ 4, 9, 14, 19, 24 ] ]
 
   # A smaller alpha means stronger filtering, i.e. more smooth but also larger latency
-  low_pass_alpha: 0.8
+  low_pass_alpha: 0.2
 
 right:
   type: vector
@@ -22,14 +24,16 @@ right:
   wrist_link_name: "R_hand_base_link"
 
   # Target refers to the retargeting target, which is the robot hand
-  target_joint_names: null
-  target_origin_link_names: [ "R_hand_base_link", "R_hand_base_link", "R_hand_base_link", "R_hand_base_link", "R_hand_base_link" ]
+  target_joint_names: ['R_thumb_proximal_yaw_joint', 'R_thumb_proximal_pitch_joint',
+                       'R_index_proximal_joint', 'R_middle_proximal_joint', 
+                       'R_ring_proximal_joint', 'R_pinky_proximal_joint' ]
+  target_origin_link_names: [ "R_hand_base_link", "R_hand_base_link", "R_hand_base_link", "R_hand_base_link", "R_hand_base_link"]
   target_task_link_names: [ "R_thumb_tip", "R_index_tip", "R_middle_tip", "R_ring_tip", "R_pinky_tip" ]
-  scaling_factor: 1.5
+  scaling_factor: 1.20
 
   # Source refers to the retargeting input, which usually corresponds to the human hand
   # The joint indices of human hand joint which corresponds to each link in the target_link_names
   target_link_human_indices: [ [ 0, 0, 0, 0, 0 ], [ 4, 9, 14, 19, 24 ] ]
 
   # A smaller alpha means stronger filtering, i.e. more smooth but also larger latency
-  low_pass_alpha: 0.8
+  low_pass_alpha: 0.2

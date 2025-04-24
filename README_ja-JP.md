@@ -9,25 +9,65 @@
 # 📺 ビデオデモ
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
-    <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
-  </a>
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
+          <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Video 1" width="75%">
+        </a>
+        <p><b> G1 (29DoF) </b></p>
+      </td>
+      <td align="center" width="50%">
+        <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo" target="_blank">
+          <img src="https://img.youtube.com/vi/pNjr2f_XHoo/maxresdefault.jpg" alt="Video 2" width="75%">
+        </a>
+        <p><b> H1_2（腕 7自由度）</b></p>
+      </td>
+    </tr>
+  </table>
 </p>
-
-
 
 
 # 0. 📖 イントロダクション
 このリポジトリは、**Apple Vision Pro** を使用して **Unitree ヒューマノイドロボット** を遠隔操作するためのものです。
 
-以下は、このリポジトリがサポートするロボットの種類です：
+以下は本リポジトリで現在サポートされているロボットの種類です,
 
-|            ロボット            | ステータス |                             備考                             |
-| :----------------------------: | :--------: | :----------------------------------------------------------: |
-|     G1 (29自由度) + Dex3-1     |   ✅ 完了   |                         mainブランチ                         |
-|       H1 (アーム4自由度)       |  ⏳ 進行中  | [この一時ブランチのIKソルバーを参照](https://github.com/unitreerobotics/avp_teleoperate/tree/h1) |
-| H1_2 (アーム7自由度) + Inspire |   ✅ 完了   | [元のh1_2ブランチは古くなり、元のg1ブランチがmainブランチに改名され、mainブランチは現在g1とh1_2の両方をサポート](https://github.com/unitreerobotics/avp_teleoperate/tree/main) |
-|              ...               |    ...     |                             ...                              |
+<table>
+  <tr>
+    <th style="text-align: center;"> 🤖 ロボット </th>
+    <th style="text-align: center;"> ⚪ ステータス </th>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/g1" target="_blank"> G1（29自由度） </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/g1" target="_blank"> G1（23自由度） </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/h1" target="_blank"> H1（腕 4自由度） </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/h1" target="_blank"> H1_2（腕 7自由度） </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/Dex3-1" target="_blank"> Dex3-1 ハンド </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://support.unitree.com/home/en/G1_developer/inspire_dfx_dexterous_hand" target="_blank"> Inspire ハンド </td>
+    <td style="text-align: center;"> ✅ 完了 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> ... </td>
+    <td style="text-align: center;"> ... </td>
+  </tr>
+</table>
+
 
 以下は、必要なデバイスと配線図です：
 
@@ -302,6 +342,7 @@ avp_teleoperate/
 │   │      ├── episode_writer.py          [模倣学習のデータを記録するために使用]  
 │   │      ├── mat_tool.py                [いくつかの小さな数学ツール]
 │   │      ├── weighted_moving_filter.py  [ジョイントデータをフィルタリングするため]
+│   │      ├── rerun_visualizer.py        [記録中のデータを可視化するため]
 │   │
 │   │──teleop_hand_and_arm.py   [遠隔操作の起動実行コード]
 ```

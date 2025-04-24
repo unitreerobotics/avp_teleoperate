@@ -176,7 +176,7 @@ class Dex3_1_Controller:
                 # Read left and right q_state from shared arrays
                 state_data = np.concatenate((np.array(left_hand_state_array[:]), np.array(right_hand_state_array[:])))
 
-                if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
+                if not np.all(right_hand_mat == 0.0) and not np.all(left_hand_mat[4] == np.array([-1.13, 0.3, 0.15])): # if hand data has been initialized.
                     ref_left_value = left_hand_mat[unitree_tip_indices]
                     ref_right_value = right_hand_mat[unitree_tip_indices]
                     ref_left_value[0] = ref_left_value[0] * 1.15
@@ -339,7 +339,7 @@ class Gripper_Controller:
                 left_hand_mat  = np.array(left_hand_array[:]).reshape(25, 3).copy()
                 right_hand_mat = np.array(right_hand_array[:]).reshape(25, 3).copy()
 
-                if not np.all(left_hand_mat == 0.0): # if hand data has been initialized.
+                if not np.all(right_hand_mat == 0.0) and not np.all(left_hand_mat[4] == np.array([-1.13, 0.3, 0.15])): # if hand data has been initialized.
                     left_euclidean_distance  = np.linalg.norm(left_hand_mat[unitree_gripper_indices[1]] - left_hand_mat[unitree_gripper_indices[0]])
                     right_euclidean_distance = np.linalg.norm(right_hand_mat[unitree_gripper_indices[1]] - right_hand_mat[unitree_gripper_indices[0]])
                     # Linear mapping from [0, THUMB_INDEX_DISTANCE_MAX] to gripper action range

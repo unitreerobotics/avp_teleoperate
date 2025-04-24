@@ -9,9 +9,22 @@
 # 📺 Video Demo
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
-    <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Watch the video" style="width: 35%;">
-  </a>
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
+          <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Video 1" width="75%">
+        </a>
+        <p><b> G1 (29DoF) </b></p>
+      </td>
+      <td align="center" width="50%">
+        <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo" target="_blank">
+          <img src="https://img.youtube.com/vi/pNjr2f_XHoo/maxresdefault.jpg" alt="Video 2" width="75%">
+        </a>
+        <p><b> H1_2 (Arm 7DoF) </b></p>
+      </td>
+    </tr>
+  </table>
 </p>
 
 
@@ -20,38 +33,40 @@
 # 0. 📖 Introduction
 This repository implements teleoperation of the **Unitree humanoid robot** using **Apple Vision Pro**.
 
-Here are the robots that will be supported,
+Here are the currently supported robots,
 
 <table>
   <tr>
     <th style="text-align: center;"> &#129302; Robot </th>
     <th style="text-align: center;"> &#9898; Status </th>
-    <th style="text-align: center;"> &#128221; Remarks </th>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1 (29DoF) + Dex3-1 </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/g1" target="_blank"> G1 (29DoF) </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;"> main branch </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1 (23DoF) </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/g1" target="_blank"> G1 (23DoF) </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;"> main branch </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> H1 (Arm 4DoF) </td>
-    <td style="text-align: center;"> &#9201; In Progress </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">Refer to this branch's ik temporarily</a> </td>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> H1_2 (Arm 7DoF) + Inspire </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/h1" target="_blank"> H1 (Arm 4DoF) </td>
     <td style="text-align: center;"> &#9989; Completed </td>
-    <td style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/main" target="_blank">The original h1_2 branch has become stale, and the original g1 branch has been renamed to the main branch. The main branch now supports both g1 and h1_2.</a> </td>
   </tr>
   <tr>
-    <td style="text-align: center;"> ··· </td>
-    <td style="text-align: center;"> ··· </td>
-    <td style="text-align: center;"> ··· </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/h1" target="_blank"> H1_2 (Arm 7DoF) </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/Dex3-1" target="_blank"> Dex3-1 hand </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://support.unitree.com/home/en/G1_developer/inspire_dfx_dexterous_hand" target="_blank"> Inspire hand </td>
+    <td style="text-align: center;"> &#9989; Completed </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> ... </td>
+    <td style="text-align: center;"> ... </td>
   </tr>
 </table>
 
@@ -330,6 +345,7 @@ avp_teleoperate/
 │   │      ├── episode_writer.py          [Used to record data for imitation learning]  
 │   │      ├── mat_tool.py                [Some small math tools]
 │   │      ├── weighted_moving_filter.py  [For filtering joint data]
+|   |      ├── rerun_visualizer.py        [For visualizing data during recording]
 │   │
 │   │──teleop_hand_and_arm.py   [Startup execution code for teleoperation]
 ```

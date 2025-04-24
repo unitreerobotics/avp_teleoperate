@@ -9,9 +9,22 @@
 # 📺 视频演示
 
 <p align="center">
-  <a href="https://www.bilibili.com/video/BV124m8YXExJ" target="_blank">
-    <img src="./img/video_cover.jpg" alt="Watch the video" style="width: 35%;">
-  </a>
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <a href="https://www.bilibili.com/video/BV124m8YXExJ" target="_blank">
+          <img src="./img/video_cover.jpg" alt="Video 1" width="75%">
+        </a>
+        <p><b> G1 (29自由度) </b></p>
+      </td>
+      <td align="center" width="50%">
+        <a href="https://www.bilibili.com/video/BV1SW421X7kA" target="_blank">
+          <img src="./img/video_cover2.jpg" alt="Video 2" width="75%">
+        </a>
+        <p><b> H1_2 (手臂7自由度) </b></p>
+      </td>
+    </tr>
+  </table>
 </p>
 
 
@@ -19,33 +32,40 @@
 
 该仓库实现了使用 **Apple Vision Pro** 对 **宇树（Unitree）人形机器人** 的遥操作控制。
 
-以下是本仓库将支持的机器人类型：
+以下是本仓库目前支持的机器人类型：
 
 <table>
   <tr>
     <th style="text-align: center;"> &#129302; 机器人 </th>
     <th style="text-align: center;"> &#9898; 状态 </th>
-    <th style="text-align: center;"> &#128221; 备注 </th>
   </tr>
   <tr>
-    <td style="text-align: center;"> G1 (29自由度) + Dex3-1 </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/cn/g1" target="_blank"> G1 (29自由度) </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
-    <th style="text-align: center;">main分支</th>
   </tr>
   <tr>
-    <td style="text-align: center;"> H1 (手臂4自由度) </td>
-    <td style="text-align: center;"> &#9201; 进行中 </td>
-    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/h1" target="_blank">可参考该临时分支下ik解算</a> </th>
-  </tr>
-  <tr>
-    <td style="text-align: center;"> H1_2 (手臂7自由度) + Inspire </td>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/cn/g1" target="_blank"> G1 (23自由度) </td>
     <td style="text-align: center;"> &#9989; 完成 </td>
-    <th style="text-align: center;"> <a href="https://github.com/unitreerobotics/avp_teleoperate/tree/main" target="_blank">原h1_2分支变为陈旧分支，原g1分支重命名为main分支，main分支现已同时支持g1和h1_2</a>  </th>
   </tr>
   <tr>
-    <td style="text-align: center;"> ··· </td>
-    <td style="text-align: center;"> ··· </td>
-    <th style="text-align: center;"> ··· </th>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/cn/h1" target="_blank"> H1 (手臂4自由度) </td>
+    <td style="text-align: center;"> &#9989; 完成 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/cn/h1" target="_blank"> H1_2 (手臂7自由度) </td>
+    <td style="text-align: center;"> &#9989; 完成 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://www.unitree.com/cn/Dex3-1" target="_blank"> Dex3-1 灵巧手 </td>
+    <td style="text-align: center;"> &#9989; 完成 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> <a href="https://support.unitree.com/home/zh/G1_developer/inspire_dfx_dexterous_hand" target="_blank"> 因时灵巧手 </td>
+    <td style="text-align: center;"> &#9989; 完成 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;"> ... </td>
+    <td style="text-align: center;"> ... </td>
   </tr>
 </table>
 
@@ -321,6 +341,7 @@ avp_teleoperate/
 │   │      ├── episode_writer.py          [用于记录模仿学习的数据]  
 │   │      ├── mat_tool.py                [一些小的数学工具]
 │   │      ├── weighted_moving_filter.py  [用于过滤关节数据的滤波器]
+|   |      ├── rerun_visualizer.py        [用于可视化录制数据]
 │   │
 │   │──teleop_hand_and_arm.py    [遥操作的启动执行代码]
 ```
