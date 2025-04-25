@@ -15,7 +15,7 @@
         <a href="https://www.youtube.com/watch?v=OTWHXTu09wE" target="_blank">
           <img src="https://img.youtube.com/vi/OTWHXTu09wE/maxresdefault.jpg" alt="Video 1" width="75%">
         </a>
-        <p><b> G1 (29DoF) </b></p>
+        <p><b> G1 (29DoF) + Dex3-1 </b></p>
       </td>
       <td align="center" width="50%">
         <a href="https://www.youtube.com/watch?v=pNjr2f_XHoo" target="_blank">
@@ -30,8 +30,9 @@
 
 
 
+
 # 0. 📖 Introduction
-This repository implements teleoperation of the **Unitree humanoid robot** using **Apple Vision Pro**.
+This repository implements teleoperation of the **Unitree humanoid robot** using **XR Devices** ( such as Apple Vision Pro、 PICO 4 Ultra Enterprise or Meta Quest 3 ).
 
 Here are the currently supported robots,
 
@@ -75,10 +76,20 @@ Here are the currently supported robots,
 Here are the required devices and wiring diagram,
 
 <p align="center">
-  <a href="https://oss-global-cdn.unitree.com/static/e0ca680eda164e31bd0ff6f8fb50604c_5050x2590.png">
-    <img src="https://oss-global-cdn.unitree.com/static/e0ca680eda164e31bd0ff6f8fb50604c_5050x2590.png" alt="Watch the Document" style="width: 65%;">
+  <a href="https://oss-global-cdn.unitree.com/static/0ab3a06368464245b30f7f25161f44b8_2965x1395.png">
+    <img src="https://oss-global-cdn.unitree.com/static/0ab3a06368464245b30f7f25161f44b8_2965x1395.png" alt="Watch the Document" style="width: 65%;">
   </a>
 </p>
+
+This is a network topology diagram, using the G1 robot as an example,
+
+<p align="center">
+  <a href="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png">
+    <img src="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png" alt="Watch the Document" style="width: 75%;">
+  </a>
+</p>
+
+
 
 
 
@@ -125,7 +136,7 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 
 
 
-# 2. ⚙️ TeleVision and Apple Vision Pro configuration
+# 2. ⚙️ Configuration
 
 ## 2.1 📥 basic
 
@@ -138,7 +149,9 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 
 ## 2.2 🔌 Local streaming
 
-**Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Apple Vision Pro and the ubuntu **Host machine** to the same router.
+**2.2.1 Apple Vision Pro** 
+
+does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Apple Vision Pro and the ubuntu **Host machine** to the same router.
 
 1. install mkcert: https://github.com/FiloSottile/mkcert
 2. check **Host machine** local ip address:
@@ -182,6 +195,22 @@ Settings > General > About > Certificate Trust Settings. Under "Enable full trus
 > In the new version of Vision OS 2, this step is different: After copying the certificate to the Apple Vision Pro device via AirDrop, a certificate-related information section will appear below the account bar in the top left corner of the Settings app. Tap it to enable trust for the certificate.
 
 Settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Features.
+
+------
+
+**2.2.2 PICO 4 Ultra Enterprise or Meta Quest 3**
+
+We have tried using hand tracking for teleoperation on the PICO 4 Ultra Enterprise and Meta-Quest 3.
+
+The system specifications of PICO 4 Ultra Enterprise:
+
+> System Version: 5.12.6.U; Android version number: 14; Software version number: c000_cf01_bv1.0.1_sv5.12.6_202412121344_sparrow_b4244_user; browser version: [4.0.28 beta version](https://github.com/vuer-ai/vuer/issues/45#issuecomment-2674918619)
+
+The system specifications of Meta-Quest 3:
+
+> System version: 49829370066100510; Version: 62.0.0.273.343.570372087; Runtime version: 62.0.0.269.341.570372063; OS version: SQ3A.220605.009.A1.
+
+For more configuration steps, please refer to the [issue](https://github.com/unitreerobotics/avp_teleoperate/issues/32).
 
 ## 2.3 🔎 Unit Test
 
@@ -265,7 +294,7 @@ First, **Operator B** needs to perform the following steps:
 
 1. Modify the `img_config` image client configuration under the `if __name__ == '__main__':` section in `~/avp_teleoperate/teleop/teleop_hand_and_arm.py`. It should match the image server parameters you configured on PC2 in Section 3.1.
 
-2. Choose different launch parameters based on your robot configuration
+2. Choose different launch parameters based on your robot configuration. Here are some example commands:
 
    ```bash
    # 1. G1 (29DoF) Robot + Dex3-1 Dexterous Hand (Note: G1_29 is the default value for --arm, so it can be omitted)
@@ -273,12 +302,18 @@ First, **Operator B** needs to perform the following steps:
    
    # 2. G1 (29DoF) Robot only
    (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py
+
+   # 3. G1 (23DoF) Robot
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=G1_23
    
-   # 3. H1_2 Robot (Note: The first-generation Inspire Dexterous Hand is currently only supported in the H1_2 branch. Support for the Main branch will be added later.)
-   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1_2
+   # 4. H1_2 Robot + Inspire hand
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1_2 --hand=inspire1
+
+   # 5. H1 Robot
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=H1
    
-   # 4. If you want to enable data visualization + recording, you can add the --record option
-   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --record
+   # 6. If you want to enable data visualization + recording, you can add the --record option
+   (tv) unitree@Host:~/avp_teleoperate/teleop$ python teleop_hand_and_arm.py --arm=G1_23 --record
    ```
 
 3. If the program starts successfully, the terminal will pause at the final line displaying the message: "Please enter the start signal (enter 'r' to start the subsequent program):"
