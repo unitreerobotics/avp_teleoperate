@@ -77,7 +77,7 @@ Here are the required devices and wiring diagram,
 
 <p align="center">
   <a href="https://oss-global-cdn.unitree.com/static/0ab3a06368464245b30f7f25161f44b8_2965x1395.png">
-    <img src="https://oss-global-cdn.unitree.com/static/0ab3a06368464245b30f7f25161f44b8_2965x1395.png" alt="Watch the Document" style="width: 65%;">
+    <img src="https://oss-global-cdn.unitree.com/static/0ab3a06368464245b30f7f25161f44b8_2965x1395.png" alt="Watch the Document" style="width: 100%;">
   </a>
 </p>
 
@@ -85,7 +85,7 @@ This is a network topology diagram, using the G1 robot as an example,
 
 <p align="center">
   <a href="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png">
-    <img src="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png" alt="Watch the Document" style="width: 75%;">
+    <img src="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png" alt="Watch the Document" style="width: 100%;">
   </a>
 </p>
 
@@ -151,7 +151,7 @@ In the Ubuntu system's `~/.bashrc` file, the default configuration is: `PS1='${d
 
 **2.2.1 Apple Vision Pro** 
 
-does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Apple Vision Pro and the ubuntu **Host machine** to the same router.
+Apple does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Apple Vision Pro and the ubuntu **Host machine** to the same router.
 
 1. install mkcert: https://github.com/FiloSottile/mkcert
 2. check **Host machine** local ip address:
@@ -380,7 +380,7 @@ avp_teleoperate/
 │   │      ├── episode_writer.py          [Used to record data for imitation learning]  
 │   │      ├── mat_tool.py                [Some small math tools]
 │   │      ├── weighted_moving_filter.py  [For filtering joint data]
-|   |      ├── rerun_visualizer.py        [For visualizing data during recording]
+│   │      ├── rerun_visualizer.py        [For visualizing data during recording]
 │   │
 │   │──teleop_hand_and_arm.py   [Startup execution code for teleoperation]
 ```

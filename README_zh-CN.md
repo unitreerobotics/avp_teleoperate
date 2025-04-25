@@ -31,7 +31,7 @@
 
 # 0. 📖 介绍
 
-该仓库实现了使用 **Apple Vision Pro** 对 **宇树（Unitree）人形机器人** 的遥操作控制。
+该仓库实现了使用 **XR设备**（比如 Apple Vision Pro、PICO 4 Ultra Enterprise 或 Meta Quest 3） 对 **宇树（Unitree）人形机器人** 的遥操作控制。
 
 以下是本仓库目前支持的机器人类型：
 
@@ -76,7 +76,7 @@
 
 <p align="center">
   <a href="https://oss-global-cdn.unitree.com/static/849e601aedca41e39014ec0f75a86c1e_2950x1445.png">
-    <img src="https://oss-global-cdn.unitree.com/static/849e601aedca41e39014ec0f75a86c1e_2950x1445.png" alt="Watch the Document" style="width: 65%;">
+    <img src="https://oss-global-cdn.unitree.com/static/849e601aedca41e39014ec0f75a86c1e_2950x1445.png" alt="Watch the Document" style="width: 100%;">
   </a>
 </p>
 
@@ -84,7 +84,7 @@
 
 <p align="center">
   <a href="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png">
-    <img src="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png" alt="Watch the Document" style="width: 65%;">
+    <img src="https://oss-global-cdn.unitree.com/static/9871e3bac4c54140b0839c68baf48a4a_1872x929.png" alt="Watch the Document" style="width: 100%;">
   </a>
 </p>
 
@@ -376,7 +376,7 @@ avp_teleoperate/
 │   │      ├── episode_writer.py          [用于记录模仿学习的数据]  
 │   │      ├── mat_tool.py                [一些小的数学工具]
 │   │      ├── weighted_moving_filter.py  [用于过滤关节数据的滤波器]
-|   |      ├── rerun_visualizer.py        [用于可视化录制数据]
+│   │      ├── rerun_visualizer.py        [用于可视化录制数据]
 │   │
 │   │──teleop_hand_and_arm.py    [遥操作的启动执行代码]
 ```
