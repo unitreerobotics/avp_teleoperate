@@ -177,6 +177,7 @@ if __name__ == '__main__':
                             left_hand_action = [dual_gripper_action_array[1]]
                             right_hand_action = [dual_gripper_action_array[0]]
                     elif args.hand == "inspire1":
+                        with dual_hand_data_lock:
                             left_hand_state = dual_hand_state_array[:6]
                             right_hand_state = dual_hand_state_array[-6:]
                             left_hand_action = dual_hand_action_array[:6]
