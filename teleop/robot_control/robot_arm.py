@@ -1658,9 +1658,9 @@ class H2_JointIndex(IntEnum):
     kRightAnkleRoll = 10
     kRightAnklePitch = 11
 
-    kWaistYaw = 12
-    kWaistRoll = 13
-    kWaistPitch = 14
+    kWaistRoll = 12
+    kWaistPitch = 13
+    kWaistYaw = 14
 
     # Left arm
     kLeftShoulderPitch = 15
