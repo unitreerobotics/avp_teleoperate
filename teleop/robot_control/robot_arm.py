@@ -1595,8 +1595,8 @@ class H2_ArmController:
 
     def _Is_weak_motor(self, motor_index):
         weak_motors = [
-            H2_JointIndex.kLeftAnklePitch.value,
-            H2_JointIndex.kRightAnklePitch.value,
+            H2_JointIndex.kLeftAnkleRoll.value,
+            H2_JointIndex.kRightAnkleRoll.value,
             # Left arm
             H2_JointIndex.kLeftShoulderPitch.value,
             H2_JointIndex.kLeftShoulderRoll.value,
